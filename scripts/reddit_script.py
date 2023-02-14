@@ -1,9 +1,9 @@
 import praw
 import json
 
-client_id = '' #INPUT CRED#
-client_secret = '' #INPUT CRED#
-user_agent = '' #INPUT CRED#
+client_id = 'uwjwEuIgxWDsluEe4bgAew' 
+client_secret = 'x9j8g9e5MGGKvxJqnCmfQUioxS3pKA' 
+user_agent = 'crypto3107' 
 reddit = praw.Reddit(client_id=client_id, client_secret=client_secret, user_agent=user_agent)
 
 # top 5 crypto coins subreddit
