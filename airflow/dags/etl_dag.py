@@ -1,7 +1,10 @@
 import os
 from datetime import datetime, timedelta
 
-from airflow.operators.python import PythonOperator
+from airflow.operators.empty import EmptyOperator
+from airflow.utils.task_group import TaskGroup
+from extract.extract_coincap_dag import build_extract_coincap_task
+from extract.extract_social_media_dag import build_extract_social_media_task
 
 from airflow import DAG
 
@@ -22,9 +25,11 @@ with DAG (
   schedule='@daily' 
 ) as dag:
   
-  # TODO: Edit this and import other 2 dags as subdags
-  extract = PythonOperator(
-    task_id='extract_google_search_coin_task',
-  )
+  start = EmptyOperator(task_id='start')
   
-  extract
+  with TaskGroup(group_id='extract') as extractGroup:
+    extract_coincap = build_extract_coincap_task(dag=dag)
+    extract_social_media = build_extract_social_media_task(dag=dag)
+    extract_coincap >> extract_social_media
+  
+  start >> extractGroup

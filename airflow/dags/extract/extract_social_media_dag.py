@@ -1,20 +1,13 @@
 import os
-from datetime import datetime, timedelta
-
 from airflow.operators.python import PythonOperator
+from airflow.utils.task_group import TaskGroup
 
 from airflow import DAG
-
 from scripts.google_search_script import get_search_metrics
+
 # from scripts.reddit_script import get_reddit_posts
 # from scripts.telegram_script import get_telegram_channel
 # from scripts.twitter_script import get_tweets_hashtags
-
-default_args = {
-  'owner' : 'airflow',
-  'retries' : 2,
-  'retry_delay' : timedelta(minutes=10)
-}
 
 # get dag directory path
 dag_path = os.getcwd()
@@ -88,53 +81,65 @@ twitter_news_dict = {
 }
 
 
-with DAG (
-  dag_id='extract_social_media_dag_v01',
-  default_args=default_args,
-  description='This dag triggers the extraction of sentiments about crypto coins from various social media sources.',
-  start_date=datetime(2023, 2, 13, 0),
-  schedule='@daily' 
-) as dag:
-  googleCoinTask = PythonOperator(
-    task_id='extract_google_search_coin_task',
-    python_callable=get_search_metrics,
-    op_kwargs={"query_dict": google_coins_dict}
-  )
+#   googleCoinTask = PythonOperator(
+#     task_id='extract_google_search_coin_task',
+#     python_callable=get_search_metrics,
+#     op_kwargs={"query_dict": google_coins_dict}
+#   )
   
-  googleNewsTask = PythonOperator(
-    task_id='extract_google_search_news_task',
-    python_callable=get_search_metrics,
-    op_kwargs={"query_dict": google_news_dict}
-  )
+#   googleNewsTask = PythonOperator(
+#     task_id='extract_google_search_news_task',
+#     python_callable=get_search_metrics,
+#     op_kwargs={"query_dict": google_news_dict}
+#   )
   
-  # redditCoinTask = PythonOperator(
-  #   task_id='extract_reddit_search_coin_task',
-  #   python_callable=get_reddit_posts,
-  #   op_kwargs={"subreddit_dict": reddit_coins_dict}
-  # )
+# redditCoinTask = PythonOperator(
+#   task_id='extract_reddit_search_coin_task',
+#   python_callable=get_reddit_posts,
+#   op_kwargs={"subreddit_dict": reddit_coins_dict}
+# )
+
+# redditNewsTask = PythonOperator(
+#   task_id='extract_reddit_search_news_task',
+#   python_callable=get_reddit_posts,
+#   op_kwargs={"subreddit_dict": reddit_news_dict}
+# )
+
+# telegramTask = PythonOperator(
+#   task_id='extract_telegram_search_task',
+#   python_callable=get_telegram_channel,
+#   op_kwargs={"channel_dict": tele_crypto_dict}
+# )
+
+# twitterCoinTask = PythonOperator(
+#   task_id='extract_google_search_coin_task',
+#   python_callable=get_tweets_hashtags,
+#   op_kwargs={"query_dict": twitter_coins_dict}
+# )
+
+# twitterNewsTask = PythonOperator(
+#   task_id='extract_google_search_news_task',
+#   python_callable=get_tweets_hashtags,
+#   op_kwargs={"query_dict": twitter_news_dict}
+# )
   
-  # redditNewsTask = PythonOperator(
-  #   task_id='extract_reddit_search_news_task',
-  #   python_callable=get_reddit_posts,
-  #   op_kwargs={"subreddit_dict": reddit_news_dict}
-  # )
+def build_extract_social_media_task(dag: DAG) -> TaskGroup:
+  with TaskGroup(group_id='extract_social_media' ) as extractSocialMediaGroup:
+    googleCoinTask = PythonOperator(
+      task_id='extract_google_search_coin_task',
+      python_callable=get_search_metrics,
+      op_kwargs={"query_dict": google_coins_dict},
+      dag=dag
+    )
+    
+    googleNewsTask = PythonOperator(
+      task_id='extract_google_search_news_task',
+      python_callable=get_search_metrics,
+      op_kwargs={"query_dict": google_news_dict},
+      dag=dag
+    )
+    
+    googleCoinTask >> googleNewsTask
   
-  # telegramTask = PythonOperator(
-  #   task_id='extract_telegram_search_task',
-  #   python_callable=get_telegram_channel,
-  #   op_kwargs={"channel_dict": tele_crypto_dict}
-  # )
+  return extractSocialMediaGroup
   
-  # twitterCoinTask = PythonOperator(
-  #   task_id='extract_google_search_coin_task',
-  #   python_callable=get_tweets_hashtags,
-  #   op_kwargs={"query_dict": twitter_coins_dict}
-  # )
-  
-  # twitterNewsTask = PythonOperator(
-  #   task_id='extract_google_search_news_task',
-  #   python_callable=get_tweets_hashtags,
-  #   op_kwargs={"query_dict": twitter_news_dict}
-  # )
-  
-  googleCoinTask >> googleNewsTask
