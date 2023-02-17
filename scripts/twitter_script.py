@@ -1,17 +1,16 @@
-import tweepy
-from tweepy import OAuthHandler
-from tweepy import Cursor 
-import sys
-import requests
 import json
+import sys
 
+import requests
+import tweepy
+from tweepy import Cursor, OAuthHandler
 
 #OAuth explanation: https://developer.twitter.com/en/docs/tutorials/authenticating-with-twitter-api-for-enterprise/authentication-method-overview
-cons_key = '' #INPUT CRED#
-cons_secret = '' #INPUT CRED#
-acc_token = '' #INPUT CRED#
-acc_secret = '' #INPUT CRED#
-bear_token = '' #INPUT CRED#
+cons_key = 'OrzYgeOiH3pAq1FzMj8ztxWKP' #INPUT CRED#
+cons_secret = 'qPhRpzLu6nT2zbQGnW0ScDYYNVf4806cuzMae7EqD0AwZ9hFCM' #INPUT CRED#
+acc_token = '130006594-9xx8NEPyImg7mTTYXvrXTPLu2Xxril614Mte7uWg' #INPUT CRED#
+acc_secret = 'h9heI3YWGW0jtPiuLeI8EiCajmpX0H1Qg7RevgSnW07be' #INPUT CRED#
+bear_token = "AAAAAAAAAAAAAAAAAAAAAAWMhAEAAAAAr9dE5XiFdQe1pWfLp7c65v3%2FuCM%3DSlCdglcfbIFnJLrLaKLy5NAJGXwKu2aRJ5JoMPGqQSoVXeCmpI" #INPUT CRED#
 
 # top 5 crypto coins hashtags
 coins_dict = {

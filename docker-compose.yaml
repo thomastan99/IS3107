@@ -58,6 +58,7 @@ x-airflow-common: &airflow-common
     # AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
     AIRFLOW__CORE__FERNET_KEY: ""
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
+    AIRFLOW__CORE__DAGBAG_IMPORT_TIMEOUT: 300
     AIRFLOW__CORE__LOAD_EXAMPLES: "false"
     AIRFLOW__API__AUTH_BACKENDS: "airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session"
     PYTHONPATH: /opt/airflow
@@ -109,7 +110,7 @@ services:
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
       interval: 10s
-      timeout: 10s
+      timeout: 160s
       retries: 5
     restart: always
     depends_on:
