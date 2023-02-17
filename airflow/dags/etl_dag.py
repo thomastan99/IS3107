@@ -30,6 +30,5 @@ with DAG (
   with TaskGroup(group_id='extract') as extractGroup:
     extract_coincap = build_extract_coincap_task(dag=dag)
     extract_social_media = build_extract_social_media_task(dag=dag)
-    extract_coincap >> extract_social_media
   
   start >> extractGroup
