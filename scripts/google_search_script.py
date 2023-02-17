@@ -67,6 +67,8 @@ def get_search_metrics(query_dict):
 
 # Get JSON of coins search terms matrics
 coins_json = get_search_metrics(coins_dict)
+print("GOOGLE COIN DATA", coins_json)
 
 # Get JSON of news search terms matrics
 news_json = get_search_metrics(news_dict)
+print("GOOGLE NEWS DATA", news_json)

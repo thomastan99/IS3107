@@ -33,7 +33,7 @@ def get_telegram_channel(channel_dict):
 
 # Get JSON for latest 20 messages for the 5 crypto channels
 telegram_channel_json = get_telegram_channel(crypto_dict)
-print(telegram_channel_json)
+print("TELEGRAM COINS DATA", telegram_channel_json)
 
 
 # TODO : insert into database

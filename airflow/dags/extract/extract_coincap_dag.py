@@ -1,7 +1,5 @@
 import os
-import sys
 from datetime import datetime, timedelta
-from io import StringIO
 
 from airflow.operators.python import PythonOperator
 

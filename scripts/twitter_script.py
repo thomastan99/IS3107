@@ -75,11 +75,11 @@ def get_tweets_hashtags(query_dict):
 
 # Get JSON for latest 10 posts for the 5 crypto coins tweets
 twitter_coins_json = get_tweets_hashtags(coins_dict)
-print(twitter_coins_json)
+print("TWITTER COIN DATA", twitter_coins_json)
 
 # Get JSON for latest 10 posts for the 5 crypto coins tweets
-# twitter_news_json = get_tweets_hashtags(news_dict)
-# print(twitter_news_json)
+twitter_news_json = get_tweets_hashtags(news_dict)
+print("TWITTER NEWS DATA", twitter_news_json)
 
 
 # TODO : insert into database

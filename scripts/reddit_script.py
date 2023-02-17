@@ -43,11 +43,11 @@ def get_reddit_posts(subreddit_dict):
 
 # Get JSON for top 10 posts for the 5 crypto coins
 reddit_coins_json = get_reddit_posts(coins_dict)
-print(reddit_coins_json)
+print("REDDIT COINS DATA", reddit_coins_json)
 
 # Get JSON for top 10 posts for the 5 crypto news
 reddit_news_json = get_reddit_posts(news_dict)
-print(reddit_news_json)
+print("REDDIT NEWS DATA", reddit_news_json)
 
 # TODO : insert into database
 #############################
