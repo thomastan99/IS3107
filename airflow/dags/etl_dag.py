@@ -23,10 +23,8 @@ with DAG (
 ) as dag:
   
   # TODO: Edit this and import other 2 dags as subdags
-  # extract = PythonOperator(
-  #   task_id='extract_google_search_coin_task',
-  #   python_callable=,
-  #   op_kwargs={"query_dict": google_coins_dict}
-  # )
+  extract = PythonOperator(
+    task_id='extract_google_search_coin_task',
+  )
   
-  # extract
+  extract
