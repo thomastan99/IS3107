@@ -15,3 +15,15 @@ password: crypto12345
 username: @crypto3107
 
 password: crypto12345
+
+## Steps to start airflow: 
+
+virtualenv env
+source env/bin/activate
+
+docker-compose build
+docker-compose up airflow-init
+docker-compose up -d
+
+go to localhost:8080
+airflow username, password: airflow

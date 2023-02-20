@@ -10,6 +10,9 @@ import requests
 import json
 import smtplib, ssl
 import os
+
+########################## ALL CREDENTIALS - REDDIT & BQ ##############################
+
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="../cred.json"
 
 # email for disconnected stream
@@ -28,6 +31,8 @@ cons_secret = 'qPhRpzLu6nT2zbQGnW0ScDYYNVf4806cuzMae7EqD0AwZ9hFCM' #INPUT CRED#
 acc_token = '130006594-9xx8NEPyImg7mTTYXvrXTPLu2Xxril614Mte7uWg' #INPUT CRED#
 acc_secret = 'h9heI3YWGW0jtPiuLeI8EiCajmpX0H1Qg7RevgSnW07be' #INPUT CRED#
 bear_token = "AAAAAAAAAAAAAAAAAAAAAAWMhAEAAAAAr9dE5XiFdQe1pWfLp7c65v3%2FuCM%3DSlCdglcfbIFnJLrLaKLy5NAJGXwKu2aRJ5JoMPGqQSoVXeCmpI" #INPUT CRED#
+
+########################## GLOBAL VARIABLES ##############################
 
 # top 10 crypto coins hashtags
 coins_dict = {
@@ -51,6 +56,9 @@ news_dict = {
     '#cryptonews': '#cryptonews',
     '#blockchain': '#blockchain'
 }
+
+
+########################## CLASS TO HANDLE TWEETS STREAMING ##############################
 
 class TweetsListener(Stream):
     def __init__(self, *args, **kwargs):
@@ -83,12 +91,10 @@ class TweetsListener(Stream):
                 tweet_data_filtered = {
                     "data": [
                         {
-                            "datetime_created": tweet_data['created_at'],
-                            "source": "Twitter",
+                            "created_at": tweet_data['created_at'],
                             "ticker": ticker_list,
                             "publisher": tweet_data['user']['screen_name'],
                             "text": full_tweet
-
                         }
                     ]
                 }
