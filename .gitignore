@@ -1,0 +1,15 @@
+# ignore all logs
+*.log
+
+# ignore all asset files
+*.xlsx
+
+# ignore all pycache files
+*.pyc
+
+# ignore DS store file
+*.DS_Store
+
+# ignore scheduler log
+latest
+
