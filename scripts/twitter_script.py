@@ -4,22 +4,32 @@ from tweepy import Cursor
 import sys
 import requests
 import json
+import os
 
+########################## ALL CREDENTIALS - REDDIT & BQ ##############################
 
-#OAuth explanation: https://developer.twitter.com/en/docs/tutorials/authenticating-with-twitter-api-for-enterprise/authentication-method-overview
-cons_key = '' #INPUT CRED#
-cons_secret = '' #INPUT CRED#
-acc_token = '' #INPUT CRED#
-acc_secret = '' #INPUT CRED#
-bear_token = '' #INPUT CRED#
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="../cred.json"
 
-# top 5 crypto coins hashtags
+cons_key = 'OrzYgeOiH3pAq1FzMj8ztxWKP' #INPUT CRED#
+cons_secret = 'qPhRpzLu6nT2zbQGnW0ScDYYNVf4806cuzMae7EqD0AwZ9hFCM' #INPUT CRED#
+acc_token = '130006594-9xx8NEPyImg7mTTYXvrXTPLu2Xxril614Mte7uWg' #INPUT CRED#
+acc_secret = 'h9heI3YWGW0jtPiuLeI8EiCajmpX0H1Qg7RevgSnW07be' #INPUT CRED#
+bear_token = "AAAAAAAAAAAAAAAAAAAAAAWMhAEAAAAAr9dE5XiFdQe1pWfLp7c65v3%2FuCM%3DSlCdglcfbIFnJLrLaKLy5NAJGXwKu2aRJ5JoMPGqQSoVXeCmpI" #INPUT CRED#
+
+########################## GLOBAL VARIABLES ##############################
+
+# top 10 crypto coins hashtags
 coins_dict = {
     '#bitcoin': '#bitcoin',
     '#ethereum': '#ethereum',
     '#tether': '#tether',
     '#binance': '#binance',
-    '#xrp': '#xrp'
+    '#binance': '#xrp',
+    '#cardano': '#cardano',
+    '#polygon': '#polygon',
+    '#dogecoin': '#dogecoin',
+    '#solana': '#solana',
+    '#polkadot': '#polkadot'
 }
 
 # top 5 crypto news hashtags
@@ -30,6 +40,8 @@ news_dict = {
     '#cryptonews': '#cryptonews',
     '#blockchain': '#blockchain'
 }
+
+########################## METHOD TO EXTRACT DATA FROM TWITTER ##############################
 
 def get_twitter_client():
 
@@ -54,6 +66,8 @@ def get_twitter_client():
 
     return client
 
+########################## METHOD TO EXTRACT DATA FROM TWITTER ##############################
+
 # get recent tweets via search query terms, return [10-100] results
 def get_tweets_hashtags(query_dict): 
     client = get_twitter_client()
@@ -65,7 +79,7 @@ def get_tweets_hashtags(query_dict):
                                             tweet_fields = ['created_at','text', 'public_metrics'],
                                             expansions='entities.mentions.username',
                                             user_fields = 'public_metrics',
-                                            max_results=10)
+                                            max_results=100)
         tweets_dict = tweets.json() 
         twitter_data.append({'twitter': query_dict[hashtag], 'tweets_details': tweets_dict})
     
@@ -73,19 +87,19 @@ def get_tweets_hashtags(query_dict):
 
     return tweets_json
 
-# Get JSON for latest 10 posts for the 5 crypto coins tweets
+########################## METHOD TO UPLOAD DATA TO BQ ##############################
+
+########################## EXTRACT AND UPLOAD DATA ##############################
+
+# Get JSON for latest 100 tweets for the 10 crypto coins hashtags
 twitter_coins_json = get_tweets_hashtags(coins_dict)
 print("TWITTER COIN DATA", twitter_coins_json)
 
-# Get JSON for latest 10 posts for the 5 crypto coins tweets
+# Get JSON for latest 100 tweets for the 5 crypto news hashtags 
 twitter_news_json = get_tweets_hashtags(news_dict)
 print("TWITTER NEWS DATA", twitter_news_json)
 
-
-# TODO : insert into database
-#############################
-#############################
-
+########################################################
 # JSON Structure: 
 # [{
 #     "twitter": "#hashtag",
@@ -114,3 +128,4 @@ print("TWITTER NEWS DATA", twitter_news_json)
 #         }]
 #     }
 # }]
+########################################################
