@@ -1,8 +1,9 @@
 import json
+
 from telethon import TelegramClient, events, sync
 
-api_id = 123456 #INPUT CRED#
-api_hash = '' #INPUT CRED#
+api_id = '24482332' #INPUT CRED#
+api_hash = 'ae0b7d279122e761554341eb74f24c5b' #INPUT CRED#
 client = TelegramClient('session_name', api_id, api_hash)
 client.start()
 

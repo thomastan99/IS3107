@@ -13,3 +13,5 @@
 # ignore scheduler log
 latest
 
+# ignore telegram session file
+*.session

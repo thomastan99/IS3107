@@ -14,9 +14,6 @@ default_args = {
   'retry_delay' : timedelta(minutes=10)
 }
 
-# get dag directory path
-dag_path = os.getcwd()
-
 with DAG (
   dag_id='extract_transform_load_pipeline',
   default_args=default_args,
@@ -25,10 +22,13 @@ with DAG (
   schedule='@daily' 
 ) as dag:
   
+  # get dag directory path
+  dag_path = os.getcwd()
+  
   start = EmptyOperator(task_id='start')
   
   with TaskGroup(group_id='extract') as extractGroup:
-    extract_coincap = build_extract_coincap_task(dag=dag)
+    extract_coincap = build_extract_coincap_task(dag=dag, dag_path=dag_path)
     extract_social_media = build_extract_social_media_task(dag=dag)
   
   start >> extractGroup

@@ -23,19 +23,24 @@ Subject: Twitter stream disconnected
 Twitter stream has disconnected. Please reconnect."""
 
 #OAuth explanation: https://developer.twitter.com/en/docs/tutorials/authenticating-with-twitter-api-for-enterprise/authentication-method-overview
-cons_key = '33O9uKhY7Vp7q35q9YSr9w3hN'
-cons_secret = 'Rd5eu9O3rVBUv1CG85X8fIW3vTfWw8wzl0jq8ew74lvMvwPnXj'
-acc_token = '742337197165051905-1n6lHUDfwmO9z4qLZz29Rd6DH15lrtq'
-acc_secret = 'Mg1oHtXOlnrP5Um3AR1qKhxMt9s7glfXHS7xZMDdFEZcw'
-bear_token = 'AAAAAAAAAAAAAAAAAAAAAADglgEAAAAAOaMzIiUMiIJC1HYP2%2BvpO%2BtK9AA%3Dk6fxPHYkZKFpdoYhkdBPkaXl0oErRsNEDn8IbFzdtWmqrEB1Bk'
+cons_key = 'OrzYgeOiH3pAq1FzMj8ztxWKP' #INPUT CRED#
+cons_secret = 'qPhRpzLu6nT2zbQGnW0ScDYYNVf4806cuzMae7EqD0AwZ9hFCM' #INPUT CRED#
+acc_token = '130006594-9xx8NEPyImg7mTTYXvrXTPLu2Xxril614Mte7uWg' #INPUT CRED#
+acc_secret = 'h9heI3YWGW0jtPiuLeI8EiCajmpX0H1Qg7RevgSnW07be' #INPUT CRED#
+bear_token = "AAAAAAAAAAAAAAAAAAAAAAWMhAEAAAAAr9dE5XiFdQe1pWfLp7c65v3%2FuCM%3DSlCdglcfbIFnJLrLaKLy5NAJGXwKu2aRJ5JoMPGqQSoVXeCmpI" #INPUT CRED#
 
-# top 5 crypto coins hashtags
+# top 10 crypto coins hashtags
 coins_dict = {
     '#bitcoin': '#bitcoin',
     '#ethereum': '#ethereum',
     '#tether': '#tether',
     '#binance': '#binance',
-    '#xrp': '#xrp'
+    '#binance': '#xrp',
+    '#cardano': '#cardano',
+    '#polygon': '#polygon',
+    '#dogecoin': '#dogecoin',
+    '#solana': '#solana',
+    '#polkadot': '#polkadot'
 }
 
 # top 5 crypto news hashtags

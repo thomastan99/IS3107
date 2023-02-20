@@ -1,8 +1,3 @@
-import tweepy
-from tweepy import OAuthHandler
-from tweepy import Cursor 
-import sys
-import requests
 import json
 import os
 
