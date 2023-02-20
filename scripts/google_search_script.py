@@ -4,14 +4,9 @@ import json
 
 pytrend = TrendReq()
 
-# top 5 crypto coins search terms
-coins_dict = [
-    'bitcoin',
-    'ethereum',
-    'tether',
-    'binance',
-    'xrp'
-]
+# top 10 crypto coins search terms
+coins_dict = ['bitcoin', 'ethereum', 'tether', 'xrp', 'binance', 'cardano', 
+'polygon', 'dogecoin', 'solana', 'polkadot']
 
 # top 5 crypto news search terms
 news_dict = {

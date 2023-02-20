@@ -1,8 +1,8 @@
 import io
 import praw
 import json
-from google.cloud import bigquery
 import os
+from google.cloud import bigquery
 from google.oauth2 import service_account
 from google.api_core.exceptions import BadRequest
 from io import StringIO
@@ -95,12 +95,12 @@ def insert_data_into_BQ(data_as_file) :
 
     try:
         load_job.result()
+        print("Successfully uploaded data to BigQuery!")
     except BadRequest:
         for error in load_job.errors:
             print(error["message"])
     
     destination_table = client.get_table(table_id)
-    print("Successfully uploaded data to BigQuery!")
 
 
 ########################## EXTRACT AND UPLOAD DATA ##############################
