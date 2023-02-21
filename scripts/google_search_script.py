@@ -1,12 +1,11 @@
-import pandas as pd                        
+import pandas as pd
 from pytrends.request import TrendReq
-import json
 
 pytrend = TrendReq()
 
 # top 10 crypto coins search terms
-coins_dict = ['bitcoin', 'ethereum', 'tether', 'xrp', 'binance', 'cardano', 
-'polygon', 'dogecoin', 'solana', 'polkadot']
+# coins_dict = ['bitcoin', 'ethereum', 'tether', 'xrp', 'binance', 'cardano', 
+# 'polygon', 'dogecoin', 'solana', 'polkadot']
 
 # top 5 crypto news search terms
 news_dict = {
@@ -58,12 +57,13 @@ def get_search_metrics(query_dict):
 
     #save to json
     queries_json = all_queries.to_json()
+    print("GOOGLE JSON QUERIES", queries_json)
     return queries_json
 
-# Get JSON of coins search terms matrics
-coins_json = get_search_metrics(coins_dict)
-print("GOOGLE COIN DATA", coins_json)
+# # Get JSON of coins search terms matrics
+# coins_json = get_search_metrics(coins_dict)
+# print("GOOGLE COIN DATA", coins_json)
 
-# Get JSON of news search terms matrics
-news_json = get_search_metrics(news_dict)
-print("GOOGLE NEWS DATA", news_json)
+# # Get JSON of news search terms matrics
+# news_json = get_search_metrics(news_dict)
+# print("GOOGLE NEWS DATA", news_json)

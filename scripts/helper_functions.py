@@ -1,4 +1,8 @@
+import os
+
+import numpy as np
 import pandas as pd
+
 def flatten_nested_json_df(df):
 
     df = df.reset_index()
@@ -44,3 +48,15 @@ def flatten_nested_json_df(df):
     print(f"final shape: {df.shape}")
     print(f"final columns: {df.columns}")
     return df
+
+def push_to_GBQ(name, table):
+    df = pd.DataFrame(pd.read_csv(name))
+    df.columns = df.columns.str.replace(' ', '_')
+    df.columns = df.columns.str.replace('.', '_')
+    df = df.replace(np.NaN, "" )
+    df = df.applymap(str)
+    print(df)
+    df.to_gbq(destination_table = table,
+                        project_id="gsheetstest99123",
+                        if_exists='append',
+    )

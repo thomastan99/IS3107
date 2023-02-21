@@ -1,19 +1,19 @@
-import pymongo
-import tweepy
-from tweepy import OAuthHandler
-from tweepy import Cursor 
-from tweepy.streaming import Stream
-from google.cloud import bigquery
-from tweepy import Stream
-import sys
-import requests
 import json
-import smtplib, ssl
 import os
+import smtplib
+import ssl
+import sys
+
+import pymongo
+import requests
+import tweepy
+from google.cloud import bigquery
+from tweepy import Cursor, OAuthHandler, Stream
+from tweepy.streaming import Stream
 
 ########################## ALL CREDENTIALS - REDDIT & BQ ##############################
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="../cred.json"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="./creds/cred.json"
 
 # email for disconnected stream
 port = 465  

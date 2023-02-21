@@ -69,6 +69,7 @@ x-airflow-common: &airflow-common
     - ${AIRFLOW_PROJ_DIR:-.}/airflow/plugins:/opt/airflow/plugins
     - ${AIRFLOW_PROJ_DIR:-.}/assets:/opt/airflow/assets
     - ${AIRFLOW_PROJ_DIR:-.}/scripts:/opt/airflow/scripts
+    - ${AIRFLOW_PROJ_DIR:-.}/creds:/opt/airflow/creds
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on: &airflow-common-depends-on
     # redis:
@@ -238,9 +239,11 @@ services:
           echo "   https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#before-you-begin"
           echo
         fi
-        mkdir -p /sources/airflow/logs /sources/airflow/dags /sources/airflow/plugins /sources/assets /sources/scripts
+        mkdir -p /sources/airflow/logs /sources/airflow/dags /sources/airflow/plugins /sources/assets /sources/scripts /sources/creds
         chown -R "${AIRFLOW_UID}:0" /sources/airflow/{logs,dags,plugins}
-        chown -R "${AIRFLOW_UID}:0" /sources/{assets,scripts}
+        chown -R "${AIRFLOW_UID}:0" /sources/{assets,scripts, creds}
+        chown -R "${AIRFLOW_UID}:0" /sources/cred.json
+        mv /sources/cred.json /sources/creds
         exec /entrypoint airflow version
     # yamllint enable rule:line-length
     environment:

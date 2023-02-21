@@ -1,15 +1,16 @@
 import io
-import praw
 import json
 import os
+from io import StringIO
+
+import praw
+from google.api_core.exceptions import BadRequest
 from google.cloud import bigquery
 from google.oauth2 import service_account
-from google.api_core.exceptions import BadRequest
-from io import StringIO
 
 ########################## ALL CREDENTIALS - REDDIT & BQ ##############################
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="../cred.json"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="./creds/cred.json"
 
 client_id = 'uwjwEuIgxWDsluEe4bgAew' 
 client_secret = 'x9j8g9e5MGGKvxJqnCmfQUioxS3pKA' 
@@ -106,20 +107,24 @@ def insert_data_into_BQ(data_as_file) :
 ########################## EXTRACT AND UPLOAD DATA ##############################
 
 # 1. Extract and upload data of 10 coins subreddits to BQ
-coins_reddit_json = get_reddit_posts(coins_dict)
-coins_in_json = StringIO(coins_reddit_json) # Format json to ndjson
-coins_result = [json.dumps(record) for record in json.load(coins_in_json)] 
-coins_formatted_json = '\n'.join(coins_result)
-coins_data_as_file = io.StringIO(coins_formatted_json) # Put ndjson into file 
-insert_data_into_BQ(coins_data_as_file)
+def extract_reddit_coin_data_into_BQ(query_dict):
+    coins_reddit_json = get_reddit_posts(query_dict)
+    coins_in_json = StringIO(coins_reddit_json) # Format json to ndjson
+    coins_result = [json.dumps(record) for record in json.load(coins_in_json)] 
+    coins_formatted_json = '\n'.join(coins_result)
+    coins_data_as_file = io.StringIO(coins_formatted_json) # Put ndjson into file 
+    insert_data_into_BQ(coins_data_as_file)
+    print("SUCCESSFULLY INSERTED REDDIT COIN DATA INTO BQ")
 
 # 2. Extract and upload data of 5 coin news subreddits to BQ
-news_reddit_json = get_reddit_posts(news_dict)
-news_in_json = StringIO(news_reddit_json) # Format json to ndjson
-news_result = [json.dumps(record) for record in json.load(news_in_json)] 
-news_formatted_json = '\n'.join(news_result)
-news_data_as_file = io.StringIO(news_formatted_json) # Put ndjson into file 
-insert_data_into_BQ(news_data_as_file)
+def extract_reddit_news_data_into_BQ(query_dict):
+    news_reddit_json = get_reddit_posts(query_dict)
+    news_in_json = StringIO(news_reddit_json) # Format json to ndjson
+    news_result = [json.dumps(record) for record in json.load(news_in_json)] 
+    news_formatted_json = '\n'.join(news_result)
+    news_data_as_file = io.StringIO(news_formatted_json) # Put ndjson into file 
+    insert_data_into_BQ(news_data_as_file)
+    print("SUCCESSFULLY INSERTED REDDIT NEWS DATA INTO BQ")
 
 
 

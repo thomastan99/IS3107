@@ -3,14 +3,17 @@ from airflow.utils.task_group import TaskGroup
 
 from airflow import DAG
 from scripts.google_search_script import get_search_metrics
-from scripts.reddit_script import get_reddit_posts
-from scripts.twitter_script import get_tweets_hashtags
+from scripts.reddit_script import (extract_reddit_coin_data_into_BQ,
+                                   extract_reddit_news_data_into_BQ)
+from scripts.twitter_script import (extract_tweet_coin_data_into_BQ,
+                                    extract_tweet_news_data_into_BQ)
 
 
 def build_extract_social_media_task(dag: DAG) -> TaskGroup:
   dictionaries = {
-    "google": {
-      "method": get_search_metrics,
+    "google1": {
+      "coinMethod": get_search_metrics,
+      "newsMethod": get_search_metrics,
       "arg": "query_dict",
       "coins" :  {
         'bitcoin',
@@ -26,10 +29,22 @@ def build_extract_social_media_task(dag: DAG) -> TaskGroup:
         'best cryptocurrency',
         'crypto exchange'
       }
+    },    
+    "google2": {
+      "coinMethod": get_search_metrics,
+      "arg": "query_dict",
+      "coins" :  {
+        'cardano', 
+        'polygon', 
+        'dogecoin', 
+        'solana', 
+        'polkadot'
+      }
     },
     "reddit": {
-      "method": get_reddit_posts,
-      "arg": "subreddit_dict",
+      "coinMethod": extract_reddit_coin_data_into_BQ,
+      "newsMethod": extract_reddit_news_data_into_BQ,
+      "arg": "query_dict",
       "coins" : {
         'bitcoin': 'r/Bitcoin',
         'ethereum': 'r/ethereum',
@@ -46,7 +61,8 @@ def build_extract_social_media_task(dag: DAG) -> TaskGroup:
       }
     },
     "twitter" : {
-      "method": get_tweets_hashtags,
+      "coinMethod": extract_tweet_coin_data_into_BQ,
+      "newsMethod": extract_tweet_news_data_into_BQ,
       "arg": "query_dict",
       "coins" : {
         '#bitcoin': '#bitcoin',
@@ -66,25 +82,32 @@ def build_extract_social_media_task(dag: DAG) -> TaskGroup:
   }
   
   with TaskGroup(group_id='extract_social_media' ) as extractSocialMediaGroup:
-    for socials in ['google', 'reddit', 'twitter']: 
+    for socials in ['google1', 'reddit', 'twitter']: 
       with TaskGroup(group_id=f'extract_{socials}') as path:
         social_dict = dictionaries.get(f'{socials}')
         
         coin_data = PythonOperator(
           task_id=f'extract_{socials}_search_coin_task',
-          python_callable=social_dict.get('method'),
+          python_callable=social_dict.get('coinMethod'),
           op_kwargs={social_dict.get("arg"): social_dict.get('coins')},
           dag=dag
         )
         
         news_data = PythonOperator(
           task_id=f'extract_{socials}_search_news_task',
-          python_callable=social_dict.get('method'),
+          python_callable=social_dict.get('newsMethod'),
           op_kwargs={social_dict.get("arg"): social_dict.get('news')},
           dag=dag
         )
         
         coin_data >> news_data
+      
+    coin_data = PythonOperator(
+      task_id=f'extract_google2_search_coin_task',
+      python_callable=dictionaries.get('google2').get('coinMethod'),
+      op_kwargs={"query_dict": dictionaries.get('google2').get('coins')},
+      dag=dag
+    )  
     
   return extractSocialMediaGroup
   

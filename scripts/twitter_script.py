@@ -1,18 +1,18 @@
-import tweepy
-import sys
-import requests
+import io
 import json
 import os
-import io
-from tweepy import OAuthHandler
-from tweepy import Cursor 
+import sys
 from io import StringIO
-from google.cloud import bigquery
+
+import requests
+import tweepy
 from google.api_core.exceptions import BadRequest
+from google.cloud import bigquery
+from tweepy import Cursor, OAuthHandler
 
 ########################## ALL CREDENTIALS - REDDIT & BQ ##############################
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="../cred.json"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="./creds/cred.json"
 
 cons_key = 'OrzYgeOiH3pAq1FzMj8ztxWKP' #INPUT CRED#
 cons_secret = 'qPhRpzLu6nT2zbQGnW0ScDYYNVf4806cuzMae7EqD0AwZ9hFCM' #INPUT CRED#
@@ -151,20 +151,24 @@ def insert_data_into_BQ(data_as_file) :
 ########################## EXTRACT AND UPLOAD DATA ##############################
 
 # 1. Extract and upload data of 10 coins tweets to BQ
-coins_twitter_json = get_tweets_hashtags(coins_dict)
-coins_in_json = StringIO(coins_twitter_json) # Format json to ndjson
-coins_result = [json.dumps(record) for record in json.load(coins_in_json)] 
-coins_formatted_json = '\n'.join(coins_result)
-coins_data_as_file = io.StringIO(coins_formatted_json) # Put ndjson into file 
-insert_data_into_BQ(coins_data_as_file)
+def extract_tweet_coin_data_into_BQ(query_dict):
+    coins_twitter_json = get_tweets_hashtags(query_dict)
+    coins_in_json = StringIO(coins_twitter_json) # Format json to ndjson
+    coins_result = [json.dumps(record) for record in json.load(coins_in_json)] 
+    coins_formatted_json = '\n'.join(coins_result)
+    coins_data_as_file = io.StringIO(coins_formatted_json) # Put ndjson into file 
+    insert_data_into_BQ(coins_data_as_file)
+    print("SUCCESSFULLY INSERTED TWITTER COIN DATA INTO BQ")
 
 # 2. Extract and upload data of 5 coin news tweets to BQ
-news_twitter_json = get_tweets_hashtags(news_dict)
-news_in_json = StringIO(news_twitter_json) # Format json to ndjson
-news_result = [json.dumps(record) for record in json.load(news_in_json)] 
-news_formatted_json = '\n'.join(news_result)
-news_data_as_file = io.StringIO(news_formatted_json) # Put ndjson into file 
-insert_data_into_BQ(news_data_as_file)
+def extract_tweet_news_data_into_BQ(query_dict):
+    news_twitter_json = get_tweets_hashtags(query_dict)
+    news_in_json = StringIO(news_twitter_json) # Format json to ndjson
+    news_result = [json.dumps(record) for record in json.load(news_in_json)] 
+    news_formatted_json = '\n'.join(news_result)
+    news_data_as_file = io.StringIO(news_formatted_json) # Put ndjson into file 
+    insert_data_into_BQ(news_data_as_file)
+    print("SUCCESSFULLY INSERTED TWITTER NEWS DATA INTO BQ")
 
 
 ########################################################
