@@ -4,7 +4,6 @@ import smtplib
 import ssl
 import sys
 
-import pymongo
 import requests
 import tweepy
 from google.cloud import bigquery
@@ -13,7 +12,7 @@ from tweepy.streaming import Stream
 
 ########################## ALL CREDENTIALS - REDDIT & BQ ##############################
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="./creds/cred.json"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="../creds/cred.json"
 
 # email for disconnected stream
 port = 465  
@@ -34,7 +33,7 @@ bear_token = "AAAAAAAAAAAAAAAAAAAAAAWMhAEAAAAAr9dE5XiFdQe1pWfLp7c65v3%2FuCM%3DSl
 
 ########################## GLOBAL VARIABLES ##############################
 
-# top 10 crypto coins hashtags
+# top 10 crypto coins hashvalues
 coins_dict = {
     '#bitcoin': '#bitcoin',
     '#ethereum': '#ethereum',
@@ -48,7 +47,7 @@ coins_dict = {
     '#polkadot': '#polkadot'
 }
 
-# top 5 crypto news hashtags
+# top 5 crypto news hashvalues
 news_dict = {
     '#crptomarket': '#crptomarket',
     '#cryptocurrency': '#cryptocurrency',
@@ -57,82 +56,108 @@ news_dict = {
     '#blockchain': '#blockchain'
 }
 
+# rule setting for coin streaming
+coin_rules = [
+    {"value": "#bitcoin"},        
+    {"value": "#ethereum"},
+    {"value": "#tether"},
+    {"value": "#binance"},
+    {"value": "#xrp"},
+    {"value": "#cardano"},
+    {"value": "#polygon"},
+    {"value": "#dogecoin"},
+    {"value": "#polkadot"},
+]
 
-########################## CLASS TO HANDLE TWEETS STREAMING ##############################
+# rule setting for news streaming
+news_rules = [
+    {"value": "#crptomarket"},        
+    {"value": "#cryptocurrency"},
+    {"value": "#crypto"},
+    {"value": "#cryptonews"},
+    {"value": "#blockchain"}
+]
 
-class TweetsListener(Stream):
-    def __init__(self, *args, **kwargs):
-        self.bq_table=kwargs['table']
-        kwargs.pop('table',None)
-        super(TweetsListener, self).__init__(*args, **kwargs)
-        self.count=0
-        
-    
-    def on_data(self, data):
+def bearer_oauth(r):
+    """
+    Method required by bearer token authentication.
+    """
 
-        if self.count >= 5: 
-            sys.exit("Reached 20 tweets") 
-                                                    
-        try:
-            tweet_data = json.loads(data)
+    r.headers["Authorization"] = f"Bearer {bear_token}"
+    r.headers["User-Agent"] = "v2FilteredStreamPython"
+    return r
 
-            if 'RT @' not in tweet_data['text']:
-            
-                try:
-                    full_tweet = tweet_data['extended_tweet']['full_text']
-                except Exception as e:
-                    full_tweet = tweet_data['text']
-            
-                ticker_list = []
-                for ticker, name in coins_dict.items():
-                    if ticker in full_tweet.lower():
-                        ticker_list.append(name)
-                              
-                tweet_data_filtered = {
-                    "data": [
-                        {
-                            "created_at": tweet_data['created_at'],
-                            "ticker": ticker_list,
-                            "publisher": tweet_data['user']['screen_name'],
-                            "text": full_tweet
-                        }
-                    ]
-                }
 
-                self.count += 1
+def get_rules():
+    response = requests.get(
+        "https://api.twitter.com/2/tweets/search/stream/rules", auth=bearer_oauth
+    )
+    if response.status_code != 200:
+        raise Exception(
+            "Cannot get rules (HTTP {}): {}".format(response.status_code, response.text)
+        )
+    print(json.dumps(response.json()))
+    return response.json()
 
-                if ticker_list != []:
-                    tweet_db.insert_one(tweet_data_filtered["data"][0])
-                    print(tweet_data_filtered["data"][0])
-            
-        except BaseException as e:
-            print("Error on_data: %s" % str(e))
-            return True
-  
-    def on_error(self, status_code):
-        if status_code == 420:
-            #send email when on_data disconnects the stream
-            context = ssl.create_default_context()
-            with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
-                server.login(sender_email, password)
-                server.sendmail(sender_email, receiver_email, message)
-            #returning False in on_data disconnects the stream
-            return False
 
-myclient = pymongo.MongoClient("mongodb://localhost:27017/")
-mydb = myclient["crypto3107"]
-tweet_db = mydb["twitter_realtime"]
+def delete_all_rules(rules):
+    if rules is None or "data" not in rules:
+        return None
 
-bigquery_client = bigquery.Client()
-dataset_ref = bigquery_client.dataset('twitter') 
-table_ref = dataset_ref.table('realtime_tweets')  
-table = bigquery_client.get_table(table_ref)  
+    ids = list(map(lambda rule: rule["id"], rules["data"]))
+    payload = {"delete": {"ids": ids}}
+    response = requests.post(
+        "https://api.twitter.com/2/tweets/search/stream/rules",
+        auth=bearer_oauth,
+        json=payload
+    )
+    if response.status_code != 200:
+        raise Exception(
+            "Cannot delete rules (HTTP {}): {}".format(
+                response.status_code, response.text
+            )
+        )
+    print(json.dumps(response.json()))
 
-auth = OAuthHandler(cons_key, cons_secret)
-auth.set_access_token(acc_token, acc_secret)
- 
-twitter_stream = Stream(auth, TweetsListener(table=table))
-twitter_stream.filter(
-    track=list(coins_dict.keys()),
-    languages=['en']
-) 
+
+def set_rules(delete, rules):
+    # You can adjust the rules if needed
+    payload = {"add": rules}
+    response = requests.post(
+        "https://api.twitter.com/2/tweets/search/stream/rules",
+        auth=bearer_oauth,
+        json=payload,
+    )
+    if response.status_code != 201:
+        raise Exception(
+            "Cannot add rules (HTTP {}): {}".format(response.status_code, response.text)
+        )
+    print(json.dumps(response.json()))
+
+
+def get_stream(set):
+    response = requests.get(
+        "https://api.twitter.com/2/tweets/search/stream", auth=bearer_oauth, stream=True,
+    )
+    print(response.status_code)
+    if response.status_code != 200:
+        raise Exception(
+            "Cannot get stream (HTTP {}): {}".format(
+                response.status_code, response.text
+            )
+        )
+    for response_line in response.iter_lines():
+        if response_line:
+            json_response = json.loads(response_line)
+            print(json.dumps(json_response, indent=4, sort_keys=True))
+
+
+def main():
+    rules = get_rules()
+    delete = delete_all_rules(rules)
+    set = set_rules(delete, coin_rules)
+    get_stream(set)
+
+
+if __name__ == "__main__":
+    main()
