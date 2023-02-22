@@ -2,7 +2,8 @@ from airflow.operators.python import PythonOperator
 from airflow.utils.task_group import TaskGroup
 
 from airflow import DAG
-from scripts.google_search_script import get_search_metrics
+from scripts.google_search_script import (extract_google_coin_data_into_BQ,
+                                          extract_google_news_data_into_BQ)
 from scripts.reddit_script import (extract_reddit_coin_data_into_BQ,
                                    extract_reddit_news_data_into_BQ)
 from scripts.twitter_script import (extract_tweet_coin_data_into_BQ,
@@ -12,8 +13,8 @@ from scripts.twitter_script import (extract_tweet_coin_data_into_BQ,
 def build_extract_social_media_task(dag: DAG) -> TaskGroup:
   dictionaries = {
     "google1": {
-      "coinMethod": get_search_metrics,
-      "newsMethod": get_search_metrics,
+      "coinMethod": extract_google_coin_data_into_BQ,
+      "newsMethod": extract_google_news_data_into_BQ,
       "arg": "query_dict",
       "coins" :  {
         'bitcoin',
@@ -31,7 +32,7 @@ def build_extract_social_media_task(dag: DAG) -> TaskGroup:
       }
     },    
     "google2": {
-      "coinMethod": get_search_metrics,
+      "coinMethod": extract_google_coin_data_into_BQ,
       "arg": "query_dict",
       "coins" :  {
         'cardano', 
@@ -70,6 +71,30 @@ def build_extract_social_media_task(dag: DAG) -> TaskGroup:
         '#tether': '#tether',
         '#binance': '#binance',
         '#xrp': '#xrp'
+      }, 
+      "news" : {
+        '#crptomarket': '#crptomarket',
+        '#cryptocurrency': '#cryptocurrency',
+        '#crypto': '#crypto',
+        '#cryptonews': '#cryptonews',
+        '#blockchain': '#blockchain'
+      }
+    },
+    "twitter_realtime" : {
+      "coinMethod": extract_tweet_coin_data_into_BQ,
+      "newsMethod": extract_tweet_news_data_into_BQ,
+      "arg": "query_dict",
+      "coins" : {
+        '#bitcoin': '#bitcoin',
+        '#ethereum': '#ethereum',
+        '#tether': '#tether',
+        '#binance': '#binance',
+        '#binance': '#xrp',
+        '#cardano': '#cardano',
+        '#polygon': '#polygon',
+        '#dogecoin': '#dogecoin',
+        '#solana': '#solana',
+        '#polkadot': '#polkadot'
       }, 
       "news" : {
         '#crptomarket': '#crptomarket',

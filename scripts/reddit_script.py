@@ -58,6 +58,7 @@ def get_reddit_posts(subreddit_dict):
             else: 
                 removePinned = True
         subreddit_data.append({'subreddit': subreddit_dict[subreddit], 'subreddit_details': subreddit_details})
+        
     
     reddit_json = json.dumps(subreddit_data)
     return reddit_json
@@ -125,7 +126,6 @@ def extract_reddit_news_data_into_BQ(query_dict):
     news_data_as_file = io.StringIO(news_formatted_json) # Put ndjson into file 
     insert_data_into_BQ(news_data_as_file)
     print("SUCCESSFULLY INSERTED REDDIT NEWS DATA INTO BQ")
-
 
 
 
