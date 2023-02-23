@@ -2,61 +2,38 @@ import os
 
 import numpy as np
 import pandas as pd
+from google.api_core.exceptions import BadRequest
+from google.cloud import bigquery
+from google.oauth2 import service_account
 
-def flatten_nested_json_df(df):
+def insert_data_into_BQ( coin_name):
+    schema = [
 
-    df = df.reset_index()
+                bigquery.SchemaField("priceUsd", "STRING", mode="NULLABLE"),
+                bigquery.SchemaField("time", "STRING", mode="NULLABLE"),
+                bigquery.SchemaField("date", "STRING", mode="NULLABLE"),
 
-    print(f"original shape: {df.shape}")
-    print(f"original columns: {df.columns}")
+    ]
+
+    client = bigquery.Client(location="asia-southeast1")
+    table_id = f"crypto3107.coincap.{coin_name}"
+    table_exists = False
+    tables = client.list_tables('coincap')
+    for table in tables:
+        if table.table_id == coin_name:
+            table_exists = True
+            break
+
+    # If the table does not exist, create it
+    if not table_exists:
+        table = bigquery.Table(table_id, schema=schema)
+        table = client.create_table(table)  # API request
+
+        print(f'Table {table.table_id} was created.')
+    
+    with open('data.json', 'rb') as f:
+        job_config = bigquery.LoadJobConfig(source_format='NEWLINE_DELIMITED_JSON')
+        job = client.load_table_from_file(f, table_id, job_config=job_config)
+        job.result()
 
 
-    # search for columns to explode/flatten
-    s = (df.applymap(type) == list).all()
-    list_columns = s[s].index.tolist()
-
-    s = (df.applymap(type) == dict).all()
-    dict_columns = s[s].index.tolist()
-
-    print(f"lists: {list_columns}, dicts: {dict_columns}")
-    while len(list_columns) > 0 or len(dict_columns) > 0:
-        new_columns = []
-
-        for col in dict_columns:
-            print(f"flattening: {col}")
-            # explode dictionaries horizontally, adding new columns
-            horiz_exploded = pd.json_normalize(df[col]).add_prefix(f'{col}.')
-            horiz_exploded.index = df.index
-            df = pd.concat([df, horiz_exploded], axis=1).drop(columns=[col])
-            new_columns.extend(horiz_exploded.columns) # inplace
-
-        for col in list_columns:
-            print(f"exploding: {col}")
-            # explode lists vertically, adding new columns
-            df = df.drop(columns=[col]).join(df[col].explode().to_frame())
-            new_columns.append(col)
-
-        # check if there are still dict o list fields to flatten
-        s = (df[new_columns].applymap(type) == list).all()
-        list_columns = s[s].index.tolist()
-
-        s = (df[new_columns].applymap(type) == dict).all()
-        dict_columns = s[s].index.tolist()
-
-        print(f"lists: {list_columns}, dicts: {dict_columns}")
-
-    print(f"final shape: {df.shape}")
-    print(f"final columns: {df.columns}")
-    return df
-
-def push_to_GBQ(name, table):
-    df = pd.DataFrame(pd.read_csv(name))
-    df.columns = df.columns.str.replace(' ', '_')
-    df.columns = df.columns.str.replace('.', '_')
-    df = df.replace(np.NaN, "" )
-    df = df.applymap(str)
-    print(df)
-    df.to_gbq(destination_table = table,
-                        project_id="gsheetstest99123",
-                        if_exists='append',
-    )
