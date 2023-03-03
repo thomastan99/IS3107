@@ -6,6 +6,7 @@ from google.api_core.exceptions import BadRequest
 from google.cloud import bigquery
 from google.oauth2 import service_account
 
+
 def insert_data_into_BQ( coin_name):
     schema = [
 
@@ -31,7 +32,7 @@ def insert_data_into_BQ( coin_name):
 
         print(f'Table {table.table_id} was created.')
     
-    with open('data.json', 'rb') as f:
+    with open(f'assets/coincap_{coin_name}_data.json', 'rb') as f:
         job_config = bigquery.LoadJobConfig(source_format='NEWLINE_DELIMITED_JSON')
         job = client.load_table_from_file(f, table_id, job_config=job_config)
         job.result()

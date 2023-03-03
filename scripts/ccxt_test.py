@@ -17,7 +17,7 @@ def extract_coincap_api():
         results = requests.request("GET", url)
         coincap_json = json.loads(results.text)
         data = coincap_json['data'] 
-        with open('data.json', 'w') as f:
+        with open(f'assets/coincap_{coin}_data.json', 'w') as f:
             for d in data:
                 json.dump(d, f)
                 f.write('\n')

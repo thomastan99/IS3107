@@ -2,7 +2,7 @@
 *.log
 
 # ignore all asset files
-*.xlsx
+assets
 
 # ignore all pycache files
 *.pyc
