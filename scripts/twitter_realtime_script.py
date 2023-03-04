@@ -12,7 +12,7 @@ from tweepy.streaming import Stream
 
 ########################## ALL CREDENTIALS - REDDIT & BQ ##############################
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="../creds/cred.json"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="./creds/cred.json"
 
 # email for disconnected stream
 port = 465  
@@ -32,50 +32,22 @@ acc_secret = 'h9heI3YWGW0jtPiuLeI8EiCajmpX0H1Qg7RevgSnW07be' #INPUT CRED#
 bear_token = "AAAAAAAAAAAAAAAAAAAAAAWMhAEAAAAAr9dE5XiFdQe1pWfLp7c65v3%2FuCM%3DSlCdglcfbIFnJLrLaKLy5NAJGXwKu2aRJ5JoMPGqQSoVXeCmpI" #INPUT CRED#
 
 ########################## GLOBAL VARIABLES ##############################
-
-# top 10 crypto coins hashvalues
-coins_dict = {
-    '#bitcoin': '#bitcoin',
-    '#ethereum': '#ethereum',
-    '#tether': '#tether',
-    '#binance': '#binance',
-    '#binance': '#xrp',
-    '#cardano': '#cardano',
-    '#polygon': '#polygon',
-    '#dogecoin': '#dogecoin',
-    '#solana': '#solana',
-    '#polkadot': '#polkadot'
-}
-
-# top 5 crypto news hashvalues
-news_dict = {
-    '#crptomarket': '#crptomarket',
-    '#cryptocurrency': '#cryptocurrency',
-    '#crypto': '#crypto',
-    '#cryptonews': '#cryptonews',
-    '#blockchain': '#blockchain'
-}
-
-# rule setting for coin streaming
-coin_rules = [
-    {"value": "#bitcoin"},        
-    {"value": "#ethereum"},
-    {"value": "#tether"},
-    {"value": "#binance"},
-    {"value": "#xrp"},
-    {"value": "#cardano"},
-    {"value": "#polygon"},
-    {"value": "#dogecoin"},
-    {"value": "#polkadot"},
-]
-
-# rule setting for news streaming
-news_rules = [
-    {"value": "#crptomarket"},        
-    {"value": "#cryptocurrency"},
-    {"value": "#crypto"},
-    {"value": "#cryptonews"},
-    {"value": "#blockchain"}
+# rule setting for news and coin streaming
+coins_news_rules = [
+    {"value": "#bitcoin", "tag": "#bitcoin coin"},        
+    {"value": "#ethereum", "tag": "#ethereum coin"},
+    {"value": "#tether", "tag": "#tether coin"},
+    {"value": "#binance", "tag": "#binance coin"},
+    {"value": "#xrp", "tag": "#xrp coin"},
+    {"value": "#cardano", "tag": "#cardano coin"},
+    {"value": "#polygon", "tag": "#polygon coin"},
+    {"value": "#dogecoin", "tag": "#dogecoin coin"},
+    {"value": "#polkadot", "tag": "#polkadot coin"},
+    {"value": "#crptomarket", "tag": "#crptomarket news"},        
+    {"value": "#cryptocurrency", "tag": "#cryptocurrency news"},
+    {"value": "#crypto", "tag": "#crypto news"},
+    {"value": "#cryptonews", "tag": "#cryptonews news"},
+    {"value": "#blockchain", "tag": "#blockchain news"}
 ]
 
 def bearer_oauth(r):
@@ -152,12 +124,9 @@ def get_stream(set):
             print(json.dumps(json_response, indent=4, sort_keys=True))
 
 
-def main():
+def extract_twitter_realtime_coin_news_data():
     rules = get_rules()
     delete = delete_all_rules(rules)
-    set = set_rules(delete, coin_rules)
+    set = set_rules(delete, coins_news_rules)
     get_stream(set)
-
-
-if __name__ == "__main__":
-    main()
+    

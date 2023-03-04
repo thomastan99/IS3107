@@ -5,6 +5,7 @@ from airflow.operators.empty import EmptyOperator
 from airflow.utils.task_group import TaskGroup
 from extract.extract_coincap_dag import build_extract_coincap_task
 from extract.extract_social_media_dag import build_extract_social_media_task
+from extract.extract_realtime_twitter_dag import build_extract_twitter_realtime_task
 
 from airflow import DAG
 
@@ -27,8 +28,13 @@ with DAG (
   
   start = EmptyOperator(task_id='start')
   
+
+  
   with TaskGroup(group_id='extract') as extractGroup:
     extract_coincap = build_extract_coincap_task(dag=dag, dag_path=dag_path)
     extract_social_media = build_extract_social_media_task(dag=dag)
-  
+    
+  extract_realtime_twitter = build_extract_twitter_realtime_task(dag=dag)
+
+  start >> extract_realtime_twitter  
   start >> extractGroup
