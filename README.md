@@ -56,3 +56,4 @@ docker-compose up -d
 2. `stream_twitter_dag`
 
    - Consists of 1 task which handles continuous streaming of real time Twitter data into Google BigQuery
+   - WIP: Hook up DAG to send email upon failure of DAG --> Will require manual rerun of the DAG in the event of failure
