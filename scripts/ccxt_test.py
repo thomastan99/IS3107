@@ -5,7 +5,7 @@ from io import StringIO
 
 import requests
 
-from scripts.helper_functions import insert_data_into_BQ
+from helper_functions import insert_data_into_BQ
 
 api_key =  "e70b1b8c-4edb-4628-a737-2d054da37c12"
 coins_lst = ['bitcoin', 'ethereum', 'tether', 'xrp','cardano','polygon','dogecoin','solana','polkadot']
