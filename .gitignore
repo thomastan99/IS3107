@@ -1,0 +1,17 @@
+# ignore all logs
+*.log
+
+# ignore all asset files
+assets
+
+# ignore all pycache files
+*.pyc
+
+# ignore DS store file
+*.DS_Store
+
+# ignore scheduler log
+latest
+
+# ignore telegram session file
+*.session
