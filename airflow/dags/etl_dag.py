@@ -18,7 +18,7 @@ with DAG (
   dag_id='extract_transform_load_pipeline',
   default_args=default_args,
   description='This dag triggers the ETL pipeline for the IS3107 Project.',
-  start_date=datetime(2023, 2, 13, 0),
+  start_date=datetime(2023, 3, 16, 0),
   schedule='@daily' 
 ) as dag:
   

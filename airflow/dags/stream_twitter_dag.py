@@ -19,7 +19,7 @@ with DAG (
   dag_id='stream_twitter_dag',
   default_args=default_args,
   description='This dag triggers the continuous streaming pipeline for the realtime Twitter Data.',
-  start_date=datetime(2023, 3, 4, 0),
+  start_date=datetime(2023, 3, 16, 0),
 ) as dag:  
   start = EmptyOperator(task_id='start')
     
