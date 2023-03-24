@@ -1,15 +1,18 @@
-import ccxt
-import time
-import datetime
 import pandas as pd
+import yfinance as yf
+import datetime
 
-exchange = ccxt.binance()
-timeframe = '1d'
-start_timestamp = int((datetime.datetime.now() - datetime.timedelta(days=1095)).timestamp()) * 1000 # 3 years ago
-end_timestamp = int(time.time()) * 1000 # current time
-coin_list = ['BTC/USDT', 'ETH/USDT', 'USDT/USDT']
+coin_list = ['BTC-USD', 'ETH-USD', 'XRP-USD']
+start_date = datetime.date.today() - datetime.timedelta(days=3*365)
+end_date = datetime.date.today()
 
 def get_data(coin):
-  data = exchange.fetch_ohlcv(f'{coin}', timeframe, start_timestamp, end_timestamp)
-  df = pd.DataFrame(data, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
-  return df
+    data = yf.download(coin, start=start_date, end=end_date, interval="1d")
+    data = data.drop('Adj Close', axis=1)
+    data = data.reset_index(drop=False).rename(columns={'index': 'Date'})
+    data = data.reset_index(drop=True)
+    return data
+
+
+
+print(get_data(coin_list[0])) 

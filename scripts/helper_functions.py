@@ -1,12 +1,12 @@
 import os
-
+import ccxt
 import numpy as np
 import pandas as pd
 from google.api_core.exceptions import BadRequest
 from google.cloud import bigquery
 from google.oauth2 import service_account
-
-
+import time
+from datetime import datetime, timedelta
 def insert_data_into_BQ(coin_name):
     schema = [
         bigquery.SchemaField("priceUsd", "STRING", mode="NULLABLE"),
@@ -39,3 +39,30 @@ def insert_data_into_BQ(coin_name):
 
 
 
+def push_to_gbq(coin):
+
+
+    import pandas as pd
+    import yfinance as yf
+    import datetime
+
+    start_date = datetime.date.today() - datetime.timedelta(days=3*365)
+    end_date = datetime.date.today()
+
+    def get_data(coin):
+        data = yf.download(coin, start=start_date, end=end_date, interval="1d")
+        data = data.drop('Adj Close', axis=1)
+        data = data.reset_index(drop=False).rename(columns={'index': 'Date'})
+        data = data.reset_index(drop=True)
+        return data
+    ticker = ""
+    if coin == "ethereum":
+        ticker = 'ETH-USD'
+    elif coin == "bitcoin":
+        ticker = 'BTC-USD'
+    elif coin == "xrp":
+        ticker = 'XRP-USD'
+    df = get_data(ticker)
+    table_id = f'crypto3107.binance_data_new.{coin}'
+    creds = service_account.Credentials.from_service_account_file('/Users/thomastan/Documents/IS3107/IS3107/creds/cred.json')
+    df.to_gbq(table_id,location="asia-southeast1", project_id='crypto3107', if_exists='replace', credentials=creds)
