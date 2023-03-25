@@ -84,7 +84,7 @@ def pull_text_data(source):
         cols = ['text', 'date']
         text_col = []
         date_col = [ ]
-        for row in raw_data['tweets_details'][:10]: # remove range to load all
+        for row in raw_data['tweets_details']: # remove range to load all
             sub_rows = row[0]['data']
             for idx in range(len(sub_rows)):
                 details = sub_rows[idx]
@@ -93,6 +93,9 @@ def pull_text_data(source):
                 text_col.append(text_data)
                 date_col.append(date_data)
         results = pd.DataFrame(list(zip(text_col,date_col)), columns=cols)
+    
+    print(results['date'].max())
+    print(results['date'].min())
         
     results['cleaned_text'] = results['text'].apply(clean_text)
     results["cleaned_date"]= pd.to_datetime(results['date']).dt.date

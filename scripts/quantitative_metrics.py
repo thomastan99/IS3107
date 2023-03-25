@@ -6,10 +6,10 @@ def pull_coin_data(coin_name):
 
     query = f"""
     with deduped_table as (
-    select distinct * from `crypto3107.coincap.{coin_name}`
+    select distinct * from `crypto3107.binance_data_new.{coin_name}`
     )
     SELECT 
-    DATE(PARSE_timestamp('%Y-%m-%dT%H:%M:%E*S%Ez', date)) AS date,
+    date, open, high, low, close, volume,
     priceUsd,
     CASE 
         WHEN priceUsd > LAG(priceUsd) OVER (ORDER BY date) THEN 1 
@@ -24,7 +24,8 @@ def pull_coin_data(coin_name):
     results = client.query(query).to_dataframe()
 
     print(results)
+    return results
 
-pull_coin_data("bitcoin")
-
+sample_ml_data = pull_coin_data("bitcoin_combined")
+sample_ml_data.to_csv('sample_ml_data.csv')
 
