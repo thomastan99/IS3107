@@ -21,23 +21,6 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="./creds/cred.json"
 
 
 def extract_coincap_api():
-    start_date = datetime.now() - timedelta(days=3*365)
-    end_date = datetime.now()
-    start_timestamp = int(start_date.timestamp() * 1000)
-    end_timestamp = int(end_date.timestamp() * 1000)
     for coin in coins_lst:
-        # url = f"https://api.coincap.io/v2/assets/{coin}/history?interval=d1&start={start_timestamp}&end={end_timestamp}&apiKey={api_key}"
-        # results = requests.request("GET", url)
-        # coincap_json = json.loads(results.text)
-        # data = coincap_json['data'] 
-        # with open(f'coincap_{coin}_data.json', 'w') as f:
-        #     for d in data:
-        #         json.dump(d, f)
-        #         f.write('\n')
-        # insert_data_into_BQ(coin)
-        print(coin)
         push_to_gbq(coin)
-
-
-
 extract_coincap_api()

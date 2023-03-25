@@ -40,8 +40,6 @@ def insert_data_into_BQ(coin_name):
 
 
 def push_to_gbq(coin):
-
-
     import pandas as pd
     import yfinance as yf
     import datetime
@@ -51,7 +49,7 @@ def push_to_gbq(coin):
 
     def get_data(coin):
         data = yf.download(coin, start=start_date, end=end_date, interval="1d")
-        data = data.drop('Adj Close', axis=1)
+        data = data.rename(columns= {'Adj Close': "Price"})
         data = data.reset_index(drop=False).rename(columns={'index': 'Date'})
         data = data.reset_index(drop=True)
         return data
@@ -64,5 +62,6 @@ def push_to_gbq(coin):
         ticker = 'XRP-USD'
     df = get_data(ticker)
     table_id = f'crypto3107.binance_data_new.{coin}'
+    ##Hardcoded Creds Here need to be fixed 
     creds = service_account.Credentials.from_service_account_file('/Users/thomastan/Documents/IS3107/IS3107/creds/cred.json')
     df.to_gbq(table_id,location="asia-southeast1", project_id='crypto3107', if_exists='replace', credentials=creds)
