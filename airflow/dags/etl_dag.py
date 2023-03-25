@@ -19,6 +19,7 @@ with DAG (
   default_args=default_args,
   description='This dag triggers the ETL pipeline for the IS3107 Project.',
   start_date=datetime(2023, 3, 16, 0),
+  catchup=False,
   schedule='@daily' 
 ) as dag:
   

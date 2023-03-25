@@ -1,12 +1,7 @@
-import os
-import ccxt
-import numpy as np
-import pandas as pd
-from google.api_core.exceptions import BadRequest
 from google.cloud import bigquery
 from google.oauth2 import service_account
-import time
-from datetime import datetime, timedelta
+
+
 def insert_data_into_BQ(coin_name):
     schema = [
         bigquery.SchemaField("priceUsd", "STRING", mode="NULLABLE"),
@@ -40,9 +35,10 @@ def insert_data_into_BQ(coin_name):
 
 
 def push_to_gbq(coin):
+    import datetime
+
     import pandas as pd
     import yfinance as yf
-    import datetime
 
     start_date = datetime.date.today() - datetime.timedelta(days=3*365)
     end_date = datetime.date.today()
@@ -63,5 +59,5 @@ def push_to_gbq(coin):
     df = get_data(ticker)
     table_id = f'crypto3107.binance_data_new.{coin}'
     ##Hardcoded Creds Here need to be fixed 
-    creds = service_account.Credentials.from_service_account_file('/Users/thomastan/Documents/IS3107/IS3107/creds/cred.json')
-    df.to_gbq(table_id,location="asia-southeast1", project_id='crypto3107', if_exists='replace', credentials=creds)
+    creds = service_account.Credentials.from_service_account_file('./creds/cred.json')
+    df.to_gbq(table_id,location="asia-southeast1", reauth=False, project_id='crypto3107', if_exists='replace', credentials=creds)

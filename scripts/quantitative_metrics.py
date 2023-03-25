@@ -1,5 +1,7 @@
-from google.cloud import bigquery
 import os
+
+from google.cloud import bigquery
+
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="./creds/cred.json"
 client = bigquery.Client()
 def pull_coin_data(coin_name):
