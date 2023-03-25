@@ -19,7 +19,7 @@ def build_extract_social_media_task(dag: DAG) -> TaskGroup:
       "coins" : {
         'bitcoin': 'r/Bitcoin',
         'ethereum': 'r/ethereum',
-        'tether': 'r/Tether',
+        'xrp': 'r/xrp',
       },
       "news" : {
         'cryptocurrency': 'r/CryptoCurrency',
@@ -36,7 +36,7 @@ def build_extract_social_media_task(dag: DAG) -> TaskGroup:
       "coins" : {
         '#bitcoin': '#bitcoin',
         '#ethereum': '#ethereum',
-        '#tether': '#tether',
+        '#xrp': '#xrp',
       }, 
       "news" : {
         '#cryptocurrency': '#cryptocurrency',

@@ -33,7 +33,7 @@ bear_token = "AAAAAAAAAAAAAAAAAAAAAAWMhAEAAAAAr9dE5XiFdQe1pWfLp7c65v3%2FuCM%3DSl
 coins_news_rules = [
     {"value": "#bitcoin", "tag": "#bitcoin coin"},        
     {"value": "#ethereum", "tag": "#ethereum coin"},
-    {"value": "#tether", "tag": "#tether coin"},
+    {"value": "#xrp", "tag": "#xrp coin"},
     {"value": "#crptomarket", "tag": "#crptomarket news"},        
     {"value": "#cryptocurrency", "tag": "#cryptocurrency news"},
     {"value": "#crypto", "tag": "#crypto news"},

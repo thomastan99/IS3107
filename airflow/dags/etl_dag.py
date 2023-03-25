@@ -22,14 +22,10 @@ with DAG (
   catchup=False,
   schedule='@daily' 
 ) as dag:
-  
-  # get dag directory path
-  dag_path = os.getcwd()
-  
   start = EmptyOperator(task_id='start')
  
   with TaskGroup(group_id='extract') as extractGroup:
-    extract_coincap = build_extract_coincap_task(dag=dag, dag_path=dag_path)
+    extract_coincap = build_extract_coincap_task(dag=dag)
     extract_social_media = build_extract_social_media_task(dag=dag)
 
   start >> extractGroup

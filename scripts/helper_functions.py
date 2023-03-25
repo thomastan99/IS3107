@@ -60,4 +60,4 @@ def push_to_gbq(coin):
     table_id = f'crypto3107.binance_data_new.{coin}'
     ##Hardcoded Creds Here need to be fixed 
     creds = service_account.Credentials.from_service_account_file('./creds/cred.json')
-    df.to_gbq(table_id,location="asia-southeast1", reauth=False, project_id='crypto3107', if_exists='replace', credentials=creds)
+    df.to_gbq(table_id, reauth=False, project_id='crypto3107', if_exists='replace', credentials=creds)
