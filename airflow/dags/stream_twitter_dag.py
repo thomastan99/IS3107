@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta
 
-from airflow.operators.empty import EmptyOperator
-from extract.extract_realtime_twitter_dag import \
+from extract.extract_realtime_twitter import \
     build_extract_twitter_realtime_task
 
 from airflow import DAG
+from airflow.operators.empty import EmptyOperator
 
 default_args = {
   'owner' : 'airflow',
