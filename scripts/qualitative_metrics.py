@@ -3,43 +3,15 @@ from google.cloud import bigquery
 import os
 # for data manipulations
 import pandas as pd
-import re
-# for transformer models
-import transformers
-from transformers import (AutoTokenizer, AutoModelForSequenceClassification,TextClassificationPipeline)
-import torch
+# sentiment analysis
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+
 
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="./creds/cred.json"
 client = bigquery.Client()
 
-    
-
-def clean_text(x):
-    """ function to lightly clean text data
-
-    Args:
-        x (str): social media text data
-
-    Returns:
-        str: lightly cleaned text data
-    """
-    x = x.encode('ascii', 'ignore').decode()  # remove unicode characters
-    x = x.lower()
-    x = re.sub(r'@(?:(?:[\w][\.]{0,1})*[\w]){1,29}', '', x) # username
-    x = re.sub(r'https*\S+', ' ', x) # remove links
-    x = re.sub(r'http*\S+', ' ', x)
-    
-    # light clean up of text
-    x = re.sub(r'rt', ' ', x)
-    x = re.sub(r'\'\w+', ' ', x) 
-    x = re.sub(r'\w*\d+\w*', ' ', x)
-    x = re.sub(r'\*|]\n', ' ', x)
-    x = re.sub(r'\s{2,}', ' ', x)
-    x = re.sub(r'\s[^\w\s]\s', ' ', x)
-    
-    return x.strip()
-
+ 
 def transform_data(row):
     """transform sentiment score from -1 to 1
 
@@ -56,7 +28,7 @@ def transform_data(row):
     return row['score'] * 0
 
     
-def pull_text_data(source):
+def pull_text_data(source, coin):
     """
     extract relevant data from bigquery into dataframe
     """
@@ -66,10 +38,10 @@ def pull_text_data(source):
         with deduped_table as (
             select * from `crypto3107.{source}`
             )
-        SELECT created_at AS date, text
-        from deduped_table
+        SELECT d.created_at AS date, d.text
+        from deduped_table d, UNNEST(matching_rules) AS nested_column 
+        WHERE nested_column.tag LIKE @coin AND CAST(d.created_at AS TIMESTAMP) >= TIMESTAMP(DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY));
         """
-        results = client.query(query).to_dataframe()
         
     else:
         platform = source.split('.')[0] + "_details"
@@ -78,9 +50,9 @@ def pull_text_data(source):
         with deduped_table as (
         select `{platform}` from `crypto3107.{source}` limit 10
         )
-        SELECT *
-        from deduped_table
-        
+        SELECT double_nested_column.text, CAST(double_nested_column.created_at AS TIMESTAMP) as date
+        FROM deduped_table as d, UNNEST(tweets_details) AS nested_column, UNNEST(nested_column.data) AS double_nested_column
+        WHERE d.twitter LIKE @coin AND CAST(double_nested_column.created_at AS TIMESTAMP) >= TIMESTAMP(DATE_SUB(CURRENT_DATE(), INTERVAL 3 YEAR));
         """
         raw_data = client.query(query).to_dataframe()
         cols = ['text', 'date']
@@ -119,30 +91,28 @@ def predict_sentiment(df):
     }
     
     """
+    # Creating the sentiment analyzer object
+    sid = SentimentIntensityAnalyzer()
     
-    # initialise pretrained model
-    model_name = 'ElKulako/cryptobert' 
-    print('Load Pretrained Model')
-    model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=3)
-    print('Successfully Load Pretrained Model')
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    pipe = TextClassificationPipeline(model=model, tokenizer=tokenizer, max_length=64, truncation=True, padding = 'max_length')
+    def score_tweets(tweets):
+        # Determing the sentiment and sentiment score for each of the tweets.
+        sentiment = []
+        score = []
+        for tweet in tweets:
+            ss = sid.polarity_scores(str(tweet))
+            score.append(ss['compound'])
     
-    # predict sentiment
-    sentiment_test_lst = df['cleaned_text'].tolist()
-    print('Predicting Sentiment Score')
-    res = pipe(sentiment_test_lst)
-    
-    # output 
-    df['bert_output'] = res
-    df['score'] = df['bert_output'].apply(lambda x: x['score'])
-    df['label'] = df['bert_output'].apply(lambda x: x['label'])
-    df.drop(['bert_output'], inplace=True, axis=1)
-    df['sentiment_score'] = df.apply(lambda x: transform_data(x), axis=1)
-    print(f"Sentiment Score from CryptoBert:\n{df}")
-    
-    final_df = df.groupby('cleaned_date', as_index=True).agg( avg_sentiment_score=('sentiment_score', 'mean')).sort_values('cleaned_date', ascending=False)
-    print(f"Daily Mean Sentiment Score:\n{final_df}")
-    
-    
-predict_sentiment(data)
+        return score
+
+    score = score_tweets(df.text)    
+
+    df['score'] = score
+    # make a time series of mean score per day
+    ts = df.groupby(pd.Grouper(key='date', freq='D')).mean().reset_index()
+    print(ts)
+    return ts
+ 
+final_df = predict_sentiment(data)
+final_df.to_csv('qualitative_data_sample.csv', index=False)
+
+
