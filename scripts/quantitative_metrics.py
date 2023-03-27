@@ -26,6 +26,6 @@ def pull_coin_data(coin_name):
     print(results)
     return results
 
-sample_ml_data = pull_coin_data("bitcoin_combined")
-sample_ml_data.to_csv('sample_ml_data.csv')
+final_df = pull_coin_data("bitcoin_combined")
+final_df.to_csv('quantitative_data_sample.csv', index=False)
 

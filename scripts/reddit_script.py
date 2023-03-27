@@ -53,7 +53,7 @@ def get_reddit_posts(subreddit_dict):
         removePinned = False
         for post in hot_posts:
             if removePinned != False:
-                postDetails = {'title':post.title, 'text':post.selftext, 'author':str(post.author),'number_comments':post.num_comments,'number_upvotes':post.score}
+                postDetails = {'date' : post.created_utc,'title':post.title, 'text':post.selftext, 'author':str(post.author),'number_comments':post.num_comments,'number_upvotes':post.score}
                 subreddit_details.append(postDetails)
             else: 
                 removePinned = True
