@@ -7,6 +7,9 @@ import praw
 from google.api_core.exceptions import BadRequest
 from google.cloud import bigquery
 from google.oauth2 import service_account
+from datetime import datetime, timedelta  
+import datetime as dt
+from dateutil import tz
 
 ########################## ALL CREDENTIALS - REDDIT & BQ ##############################
 
@@ -46,6 +49,8 @@ news_dict = {
 
 def get_reddit_posts(subreddit_dict): 
     subreddit_data = []
+    from_zone = tz.gettz('UTC')
+    to_zone = tz.gettz('Singapore')
 
     for subreddit in subreddit_dict.keys(): 
         hot_posts = reddit.subreddit(subreddit).hot(limit=21)
@@ -53,7 +58,15 @@ def get_reddit_posts(subreddit_dict):
         removePinned = False
         for post in hot_posts:
             if removePinned != False:
-                postDetails = {'title':post.title, 'text':post.selftext, 'author':str(post.author),'number_comments':post.num_comments,'number_upvotes':post.score}
+                # Convert UTC to GMT+8
+                new_datetime = str(dt.datetime.fromtimestamp(post.created))
+                utc = datetime.strptime(new_datetime, '%Y-%m-%d %H:%M:%S')
+                utc = utc.replace(tzinfo=from_zone)
+                local = utc.astimezone(to_zone)
+                local_dt = local.strftime('%Y-%m-%d %H:%M:%S')
+
+                postDetails = {'title':post.title, 'text':post.selftext, 'author':str(post.author),
+                               'number_comments':post.num_comments,'number_upvotes':post.score, 'created_datetime': local_dt}
                 subreddit_details.append(postDetails)
             else: 
                 removePinned = True
@@ -78,6 +91,7 @@ def insert_data_into_BQ(data_as_file) :
                 bigquery.SchemaField("author", "STRING", mode="NULLABLE"),
                 bigquery.SchemaField("number_comments", "INT64", mode="NULLABLE"),
                 bigquery.SchemaField("number_upvotes", "INT64", mode="NULLABLE"),
+                bigquery.SchemaField("created_datetime", "STRING", mode="NULLABLE"),
             ],
         )
     ]
@@ -128,8 +142,6 @@ def extract_reddit_news_data_into_BQ(query_dict):
     print("SUCCESSFULLY INSERTED REDDIT NEWS DATA INTO BQ")
 
 
-
-
 ########################################################
 # JSON Structure: 
 # [{
@@ -140,7 +152,8 @@ def extract_reddit_news_data_into_BQ(query_dict):
 #             "text": "text",
 #             "author": "author",
 #             "number_comments": "number_comments",
-#             "number_upvotes": "number_upvotes"
+#             "number_upvotes": "number_upvotes",
+#             "created_datetime": "datetime"
 #         }
 #     ]
 # }]
