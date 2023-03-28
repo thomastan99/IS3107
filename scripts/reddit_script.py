@@ -20,31 +20,6 @@ client_secret = 'x9j8g9e5MGGKvxJqnCmfQUioxS3pKA'
 user_agent = 'crypto3107' 
 reddit = praw.Reddit(client_id=client_id, client_secret=client_secret, user_agent=user_agent)
 
-########################## GLOBAL VARIABLES ##############################
-
-# top 10 crypto coins subreddit
-coins_dict = {
-    'bitcoin': 'r/Bitcoin',
-    'ethereum': 'r/ethereum',
-    'tether': 'r/Tether',
-    'binance': 'r/binance',
-    'xrp': 'r/XRP',
-    'cardano': 'cardano',
-    'polygon': 'r/polygon',
-    'dogecoin': 'r/dogecoin',
-    'solana': 'r/solana',
-    'polkadot': 'r/polkadot'
-}
-
-# top 5 crypto news subreddit - can use for justification: https://coinbound.io/best-crypto-subreddits/ 
-news_dict = {
-    'cryptocurrency': 'r/CryptoCurrency',
-    'cryptomarkets': 'r/CryptoMarkets',
-    'bitcoinbeginners': 'r/BitcoinBeginners',
-    'cryptocurrencies': 'r/CryptoCurrencies',
-    'crypto_general': 'r/Crypto_General'
-}
-
 ########################## METHOD TO EXTRACT DATA FROM REDDIT ##############################
 
 def get_reddit_posts(subreddit_dict): 
