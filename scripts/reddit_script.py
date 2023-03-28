@@ -66,11 +66,13 @@ def get_reddit_posts(subreddit_dict):
                 local_dt = local.strftime('%Y-%m-%d %H:%M:%S')
 
                 postDetails = {'title':post.title, 'text':post.selftext, 'author':str(post.author),
-                               'number_comments':post.num_comments,'number_upvotes':post.score, 'created_datetime': local_dt}
+                               'number_comments':post.num_comments,'number_upvotes':post.score, 'created_at': local_dt}
                 subreddit_details.append(postDetails)
             else: 
                 removePinned = True
-        subreddit_data.append({'subreddit': subreddit_dict[subreddit], 'subreddit_details': subreddit_details})
+        reddit_data = []
+        reddit_data.append({'data': subreddit_details})
+        subreddit_data.append({'reddit': subreddit_dict[subreddit], 'reddit_details': reddit_data})
         
     
     reddit_json = json.dumps(subreddit_data)
@@ -80,18 +82,25 @@ def get_reddit_posts(subreddit_dict):
 
 def insert_data_into_BQ(data_as_file) :
     schema = [
-        bigquery.SchemaField("subreddit", "STRING", mode="NULLABLE"),
+        bigquery.SchemaField("reddit", "STRING", mode="NULLABLE"),
         bigquery.SchemaField(
-            "subreddit_details",
+            "reddit_details",
             "RECORD",
             mode = "REPEATED",
             fields=[
-                bigquery.SchemaField("title", "STRING", mode="NULLABLE"),
-                bigquery.SchemaField("text", "STRING", mode="NULLABLE"),
-                bigquery.SchemaField("author", "STRING", mode="NULLABLE"),
-                bigquery.SchemaField("number_comments", "INT64", mode="NULLABLE"),
-                bigquery.SchemaField("number_upvotes", "INT64", mode="NULLABLE"),
-                bigquery.SchemaField("created_datetime", "STRING", mode="NULLABLE"),
+                bigquery.SchemaField(
+                    "data",
+                    "RECORD",
+                    mode = "REPEATED",
+                    fields=[
+                        bigquery.SchemaField("title", "STRING", mode="NULLABLE"),
+                        bigquery.SchemaField("text", "STRING", mode="NULLABLE"),
+                        bigquery.SchemaField("author", "STRING", mode="NULLABLE"),
+                        bigquery.SchemaField("number_comments", "INT64", mode="NULLABLE"),
+                        bigquery.SchemaField("number_upvotes", "INT64", mode="NULLABLE"),
+                        bigquery.SchemaField("created_at", "STRING", mode="NULLABLE"),
+                    ]
+                )
             ],
         )
     ]
@@ -147,14 +156,16 @@ def extract_reddit_news_data_into_BQ(query_dict):
 # [{
 #     "subreddit": "r/subreddit",
 #     "subreddit_details": [
-#         {
-#             "title": "title",
-#             "text": "text",
-#             "author": "author",
-#             "number_comments": "number_comments",
-#             "number_upvotes": "number_upvotes",
-#             "created_datetime": "datetime"
-#         }
+#         "data" : [
+    #         {
+    #             "title": "title",
+    #             "text": "text",
+    #             "author": "author",
+    #             "number_comments": "number_comments",
+    #             "number_upvotes": "number_upvotes",
+    #             "created_at": "datetime"
+    #         }
+#         ]
 #     ]
 # }]
 ########################################################

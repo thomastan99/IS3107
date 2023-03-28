@@ -72,9 +72,11 @@ def pull_text_data(source):
         results = client.query(query).to_dataframe()
         
     else:
+        platform = source.split('.')[0] + "_details"
+        
         query = f"""
         with deduped_table as (
-        select tweets_details from `crypto3107.{source}`
+        select `{platform}` from `crypto3107.{source}` limit 10
         )
         SELECT *
         from deduped_table
@@ -84,7 +86,7 @@ def pull_text_data(source):
         cols = ['text', 'date']
         text_col = []
         date_col = [ ]
-        for row in raw_data['tweets_details']: # remove range to load all
+        for row in raw_data[platform]: # remove range to load all
             sub_rows = row[0]['data']
             for idx in range(len(sub_rows)):
                 details = sub_rows[idx]
@@ -103,7 +105,7 @@ def pull_text_data(source):
     print(f"Cleaned Text Data:\n{results}")
     return results[['cleaned_text', 'cleaned_date']]
 
-data = pull_text_data("twitter.batch_tweets") # or "twitter.realtime_tweets/ batch_tweets"
+data = pull_text_data("reddit.batch_posts") # or "twitter.realtime_tweets" or "twitter.batch_tweets"
 
 
 def predict_sentiment(df):
