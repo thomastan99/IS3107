@@ -5,7 +5,7 @@ from scripts.quantitative_metrics import pull_coin_data
 
 
 def build_transform_quantitative(dag: DAG) -> PythonOperator:
-  with TaskGroup(group_id='transform_quantitative_group' ) as transformQuantitativeGroup:
+  with TaskGroup(group_id='transform_quantitative_group') as transformQuantitativeGroup:
     for coin in ['bitcoin_combined', 'ethereum_combined', 'xrp_combined']: 
       transform_quantitative_task  = PythonOperator(
         task_id=f'transform_quantitative_{coin}_dag_task',

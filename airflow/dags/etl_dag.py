@@ -32,6 +32,6 @@ with DAG (
     
   with TaskGroup(group_id='transform') as transformGroup:
     transform_quantitative = build_transform_quantitative(dag=dag)
-    # transform_qualitative = build_transform_qualitative(dag=dag)
+    transform_qualitative = build_transform_qualitative(dag=dag)
 
   start >> extractGroup >> transformGroup
