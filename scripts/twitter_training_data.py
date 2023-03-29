@@ -1,14 +1,14 @@
+import datetime
 import io
 import json
 import os
 import sys
+import timeit
 from io import StringIO
 
-import requests
-import tweepy
+import snscrape.modules.twitter as sntwitter
 from google.api_core.exceptions import BadRequest
 from google.cloud import bigquery
-from tweepy import Cursor, OAuthHandler
 
 ########################## ALL CREDENTIALS - REDDIT & BQ ##############################
 
@@ -21,71 +21,66 @@ acc_secret = 'h9heI3YWGW0jtPiuLeI8EiCajmpX0H1Qg7RevgSnW07be' #INPUT CRED#
 bear_token = "AAAAAAAAAAAAAAAAAAAAAAWMhAEAAAAAr9dE5XiFdQe1pWfLp7c65v3%2FuCM%3DSlCdglcfbIFnJLrLaKLy5NAJGXwKu2aRJ5JoMPGqQSoVXeCmpI" #INPUT CRED#
 
 ########################## GLOBAL VARIABLES ##############################
-
-# top 10 crypto coins hashtags
-coins_dict = {
-    '#bitcoin': '#bitcoin',
-    '#ethereum': '#ethereum',
-    '#tether': '#tether',
-    '#binance': '#binance',
-    '#binance': '#xrp',
-    '#cardano': '#cardano',
-    '#polygon': '#polygon',
-    '#dogecoin': '#dogecoin',
-    '#solana': '#solana',
-    '#polkadot': '#polkadot'
-}
-
-# top 5 crypto news hashtags
+coins_news_dict = {
+        '#bitcoin': '#bitcoin',
+        '#ethereum': '#ethereum',
+        '#xrp': '#xrp',        
+        '#cryptomarket': '#crptomarket',
+        '#cryptocurrency': '#cryptocurrency',
+        '#crypto': '#crypto',
+        '#cryptonews': '#cryptonews',
+        '#blockchain': '#blockchain'
+      }
+ 
 news_dict = {
-    '#cryptomarket': '#crptomarket',
-    '#cryptocurrency': '#cryptocurrency',
-    '#crypto': '#crypto',
-    '#cryptonews': '#cryptonews',
-    '#blockchain': '#blockchain'
-}
 
-########################## METHOD TO EXTRACT DATA FROM TWITTER ##############################
+      }
 
-def get_twitter_client():
-
-    try:
-        consumer_key = cons_key
-        consumer_secret = cons_secret
-        access_token = acc_token
-        access_secret = acc_secret
-        bearer_token = bear_token
-    except KeyError:
-        sys.stderr.write("Twitter Environment Variable not Set\n")
-        sys.exit(1)
-        
-    client = tweepy.Client(bearer_token=bearer_token, 
-                        consumer_key=consumer_key, 
-                        consumer_secret=consumer_secret, 
-                        access_token=access_token, 
-                        access_token_secret=access_secret, 
-                        return_type = requests.Response,
-                        wait_on_rate_limit=True)
-    return client
-
-########################## METHOD TO EXTRACT DATA FROM TWITTER ##############################
-
+########################## METHOD TO SCRAPE DATA FROM TWITTER ##############################
 def get_tweets_hashtags(query_dict): 
-    client = get_twitter_client()
     twitter_data =[]
+    
+    def get_tweets_for_day(hashtag, limit_per_day, start_date, end_date, tweets_dict):
+        count = 0    
+        start_date_str = start_date.strftime("%Y-%m-%d")
+        end_date_str = end_date.strftime("%Y-%m-%d")
+        query_result = sntwitter.TwitterSearchScraper(hashtag + f' since:{start_date_str} until:{end_date_str}').get_items()
+        tic2 = timeit.default_timer() 
+        for tweet in query_result:
+            if count < limit_per_day:
+                tweet_data = {}
+                tweet_df = vars(tweet)
+                
+                tweet_data['public_metrics'] = {
+                    'retweet_count': tweet_df['retweetCount'],
+                    'reply_count': tweet_df['replyCount'],
+                    'quote_count': tweet_df['quoteCount'],
+                    'like_count': tweet_df['likeCount'],
+                }
+                tweet_data['id'] = tweet_df['id']
+                tweet_data['text'] = tweet_df['rawContent']
+                tweet_data['created_at'] = tweet_df['date'].strftime("%Y-%m-%dT%H:%M.%SSZ")
+                tweets_dict['data'].append(tweet_data)
+                
+                print("hashtag, date, count ", hashtag, end_date_str, count)
+                count += 1
+            else:
+                toc2 = timeit.default_timer() 
+                print("time taken for date  ", end_date_str, toc2-tic2)
+                break
+        if (start_date <= end_date):
+            get_tweets_for_day(hashtag, limit_per_day, start_date, end_date - datetime.timedelta(days=1), tweets_dict)
+            return tweets_dict
+
     for hashtag in query_dict.keys():
-        # get recent tweets via search query terms, return [10-100] results
-        # tweet_fields: https://developer.twitter.com/en/docs/twitter-api/data-dictionary/object-model/tweet 
-        # Other types of fields: https://docs.tweepy.org/en/stable/expansions_and_fields.html#tweet-fields
-        tweets = client.search_recent_tweets(query=hashtag, 
-                                            tweet_fields = ['created_at','text', 'public_metrics'],
-                                            max_results=100)
-        tweets_dict = tweets.json() 
-        del tweets_dict['meta']
-        for item in tweets_dict.get('data'):
-            del item['edit_history_tweet_ids']
-            
+        tweets_dict = {'data': []}        
+        tic = timeit.default_timer() 
+        tweets_dict = get_tweets_for_day(hashtag, 5, datetime.datetime.today() - datetime.timedelta(days=365*3), datetime.datetime.today(), tweets_dict)
+        toc = timeit.default_timer()
+        print("TIME TAKEN WHOLE PROCESS", (toc - tic)/60)
+
         twitter_data.append({'twitter': query_dict[hashtag], 'tweets_details': tweets_dict})
+        
     
     tweets_json = json.dumps(twitter_data, indent=4)
     return tweets_json
@@ -117,7 +112,6 @@ def insert_data_into_BQ(data_as_file) :
                                 bigquery.SchemaField("reply_count", "INT64", mode="NULLABLE"),
                                 bigquery.SchemaField("like_count", "INT64", mode="NULLABLE"),
                                 bigquery.SchemaField("quote_count", "INT64", mode="NULLABLE"),
-                                bigquery.SchemaField("impression_count", "INT64", mode="NULLABLE"),
                             ]
                         ),
                     ]
@@ -127,10 +121,11 @@ def insert_data_into_BQ(data_as_file) :
     ]
 
     client = bigquery.Client()
-    table_id = "crypto3107.twitter.batch_tweets"
+    table_id = "crypto3107.training_data.twitter"
     job_config = bigquery.LoadJobConfig(
         schema=schema,
         source_format=bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
+        write_disposition=bigquery.WriteDisposition.WRITE_TRUNCATE
     )
     load_job = client.load_table_from_file(
         data_as_file,
@@ -150,25 +145,22 @@ def insert_data_into_BQ(data_as_file) :
 
 ########################## EXTRACT AND UPLOAD DATA ##############################
 
-# 1. Extract and upload data of 10 coins tweets to BQ
-def extract_tweet_coin_data_into_BQ(query_dict):
+# 1. Extract and upload data of 3 coins and 5 news hashtags tweets to BQ
+def extract_tweet_coin_news_data_into_BQ(query_dict):
     coins_twitter_json = get_tweets_hashtags(query_dict)
     coins_in_json = StringIO(coins_twitter_json) # Format json to ndjson
     coins_result = [json.dumps(record) for record in json.load(coins_in_json)] 
     coins_formatted_json = '\n'.join(coins_result)
     coins_data_as_file = io.StringIO(coins_formatted_json) # Put ndjson into file 
     insert_data_into_BQ(coins_data_as_file)
-    print("SUCCESSFULLY INSERTED TWITTER COIN DATA INTO BQ")
+    print("SUCCESSFULLY INSERTED TWITTER COIN AND NEWS DATA INTO BQ")
 
-# 2. Extract and upload data of 5 coin news tweets to BQ
-def extract_tweet_news_data_into_BQ(query_dict):
-    news_twitter_json = get_tweets_hashtags(query_dict)
-    news_in_json = StringIO(news_twitter_json) # Format json to ndjson
-    news_result = [json.dumps(record) for record in json.load(news_in_json)] 
-    news_formatted_json = '\n'.join(news_result)
-    news_data_as_file = io.StringIO(news_formatted_json) # Put ndjson into file 
-    insert_data_into_BQ(news_data_as_file)
-    print("SUCCESSFULLY INSERTED TWITTER NEWS DATA INTO BQ")
+
+
+########################## TEMP TEST LINE FOR SCRAPING DATA ##############################
+sys.setrecursionlimit(1000000)
+extract_tweet_coin_news_data_into_BQ(coins_news_dict)
+
 
 ########################################################
 # JSON Structure: 

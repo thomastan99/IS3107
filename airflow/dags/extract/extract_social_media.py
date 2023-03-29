@@ -6,7 +6,7 @@ from scripts.google_search_script import (extract_google_coin_data_into_BQ,
                                           extract_google_news_data_into_BQ)
 from scripts.reddit_script import (extract_reddit_coin_data_into_BQ,
                                    extract_reddit_news_data_into_BQ)
-from scripts.twitter_script import (extract_tweet_coin_data_into_BQ,
+from scripts.twitter_training_data import (extract_tweet_coin_data_into_BQ,
                                     extract_tweet_news_data_into_BQ)
 
 
