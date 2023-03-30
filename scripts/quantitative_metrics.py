@@ -1,4 +1,5 @@
 import os
+import pandas as pd
 
 from google.cloud import bigquery
 
@@ -10,21 +11,18 @@ def pull_coin_data(coin_name):
     with deduped_table as (
     select distinct * from `crypto3107.binance_data_new.{coin_name}`
     )
-    SELECT 
-    date, open, high, low, close, volume,
-    priceUsd,
-    CASE 
-        WHEN priceUsd > LAG(priceUsd) OVER (ORDER BY date) THEN 1 
-        ELSE 0 
-    END AS is_greater
+    SELECT *
     from deduped_table
 
-    order by date desc
+    order by Date desc
 
     """
 
     results = client.query(query).to_dataframe()
+    results.Date = pd.to_datetime(results.Date)
+    return results
 
-    results.to_csv(f"assets/{coin_name}_ml_data.csv")
+final_df = pull_coin_data('bitcoin')
+final_df.to_csv(f"quantitative_data.csv")
 
 
