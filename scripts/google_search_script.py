@@ -15,9 +15,7 @@ pytrend = TrendReq()
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="./creds/cred.json"
 
 # top 10 crypto coins search terms
-coins_dict_1 = ['bitcoin', 'ethereum', 'tether', 'xrp', 'binance']
-              
-coins_dict_2 = ['cardano', 'polygon', 'dogecoin', 'solana', 'polkadot']
+coins_dict_1 = ['bitcoin', 'ethereum', 'tether']
 
 # top 5 crypto news search terms
 news_dict = {
@@ -32,7 +30,6 @@ news_dict = {
 ########################## METHOD TO EXTRACT DATA FROM Google ##############################
 
 def get_search_metrics(query_dict): 
-        
     pytrend.build_payload(kw_list=query_dict)
 
     #Referenced code: https://lazarinastoy.com/the-ultimate-guide-to-pytrends-google-trends-api-with-python/ 
@@ -40,8 +37,8 @@ def get_search_metrics(query_dict):
     # Related Queries, returns a dictionary of dataframes
     related_queries = pytrend.related_queries()
     related_queries.values()
-
-    #build lists dataframes
+   
+    #build lists dataframes 
     top = list(related_queries.values())[0]['top']
     rising = list(related_queries.values())[0]['rising']
 

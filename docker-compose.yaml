@@ -241,9 +241,6 @@ services:
         fi
         mkdir -p /sources/airflow/logs /sources/airflow/dags /sources/airflow/plugins /sources/assets /sources/scripts /sources/creds
         chown -R "${AIRFLOW_UID}:0" /sources/airflow/{logs,dags,plugins}
-        chown -R "${AIRFLOW_UID}:0" /sources/{assets,scripts, creds}
-        chown -R "${AIRFLOW_UID}:0" /sources/cred.json
-        mv /sources/cred.json /sources/creds
         exec /entrypoint airflow version
     # yamllint enable rule:line-length
     environment:

@@ -7,6 +7,9 @@ import praw
 from google.api_core.exceptions import BadRequest
 from google.cloud import bigquery
 from google.oauth2 import service_account
+from datetime import datetime, timedelta  
+import datetime as dt
+from dateutil import tz
 
 ########################## ALL CREDENTIALS - REDDIT & BQ ##############################
 
@@ -17,35 +20,12 @@ client_secret = 'x9j8g9e5MGGKvxJqnCmfQUioxS3pKA'
 user_agent = 'crypto3107' 
 reddit = praw.Reddit(client_id=client_id, client_secret=client_secret, user_agent=user_agent)
 
-########################## GLOBAL VARIABLES ##############################
-
-# top 10 crypto coins subreddit
-coins_dict = {
-    'bitcoin': 'r/Bitcoin',
-    'ethereum': 'r/ethereum',
-    'tether': 'r/Tether',
-    'binance': 'r/binance',
-    'xrp': 'r/XRP',
-    'cardano': 'cardano',
-    'polygon': 'r/polygon',
-    'dogecoin': 'r/dogecoin',
-    'solana': 'r/solana',
-    'polkadot': 'r/polkadot'
-}
-
-# top 5 crypto news subreddit - can use for justification: https://coinbound.io/best-crypto-subreddits/ 
-news_dict = {
-    'cryptocurrency': 'r/CryptoCurrency',
-    'cryptomarkets': 'r/CryptoMarkets',
-    'bitcoinbeginners': 'r/BitcoinBeginners',
-    'cryptocurrencies': 'r/CryptoCurrencies',
-    'crypto_general': 'r/Crypto_General'
-}
-
 ########################## METHOD TO EXTRACT DATA FROM REDDIT ##############################
 
 def get_reddit_posts(subreddit_dict): 
     subreddit_data = []
+    from_zone = tz.gettz('UTC')
+    to_zone = tz.gettz('Singapore')
 
     for subreddit in subreddit_dict.keys(): 
         hot_posts = reddit.subreddit(subreddit).hot(limit=21)
@@ -53,11 +33,21 @@ def get_reddit_posts(subreddit_dict):
         removePinned = False
         for post in hot_posts:
             if removePinned != False:
-                postDetails = {'title':post.title, 'text':post.selftext, 'author':str(post.author),'number_comments':post.num_comments,'number_upvotes':post.score}
+                # Convert UTC to GMT+8
+                new_datetime = str(dt.datetime.fromtimestamp(post.created))
+                utc = datetime.strptime(new_datetime, '%Y-%m-%d %H:%M:%S')
+                utc = utc.replace(tzinfo=from_zone)
+                local = utc.astimezone(to_zone)
+                local_dt = local.strftime('%Y-%m-%d %H:%M:%S')
+
+                postDetails = {'title':post.title, 'text':post.selftext, 'author':str(post.author),
+                               'number_comments':post.num_comments,'number_upvotes':post.score, 'created_at': local_dt}
                 subreddit_details.append(postDetails)
             else: 
                 removePinned = True
-        subreddit_data.append({'subreddit': subreddit_dict[subreddit], 'subreddit_details': subreddit_details})
+        reddit_data = []
+        reddit_data.append({'data': subreddit_details})
+        subreddit_data.append({'reddit': subreddit_dict[subreddit], 'reddit_details': reddit_data})
         
     
     reddit_json = json.dumps(subreddit_data)
@@ -67,17 +57,25 @@ def get_reddit_posts(subreddit_dict):
 
 def insert_data_into_BQ(data_as_file) :
     schema = [
-        bigquery.SchemaField("subreddit", "STRING", mode="NULLABLE"),
+        bigquery.SchemaField("reddit", "STRING", mode="NULLABLE"),
         bigquery.SchemaField(
-            "subreddit_details",
+            "reddit_details",
             "RECORD",
             mode = "REPEATED",
             fields=[
-                bigquery.SchemaField("title", "STRING", mode="NULLABLE"),
-                bigquery.SchemaField("text", "STRING", mode="NULLABLE"),
-                bigquery.SchemaField("author", "STRING", mode="NULLABLE"),
-                bigquery.SchemaField("number_comments", "INT64", mode="NULLABLE"),
-                bigquery.SchemaField("number_upvotes", "INT64", mode="NULLABLE"),
+                bigquery.SchemaField(
+                    "data",
+                    "RECORD",
+                    mode = "REPEATED",
+                    fields=[
+                        bigquery.SchemaField("title", "STRING", mode="NULLABLE"),
+                        bigquery.SchemaField("text", "STRING", mode="NULLABLE"),
+                        bigquery.SchemaField("author", "STRING", mode="NULLABLE"),
+                        bigquery.SchemaField("number_comments", "INT64", mode="NULLABLE"),
+                        bigquery.SchemaField("number_upvotes", "INT64", mode="NULLABLE"),
+                        bigquery.SchemaField("created_at", "STRING", mode="NULLABLE"),
+                    ]
+                )
             ],
         )
     ]
@@ -128,20 +126,21 @@ def extract_reddit_news_data_into_BQ(query_dict):
     print("SUCCESSFULLY INSERTED REDDIT NEWS DATA INTO BQ")
 
 
-
-
 ########################################################
 # JSON Structure: 
 # [{
 #     "subreddit": "r/subreddit",
 #     "subreddit_details": [
-#         {
-#             "title": "title",
-#             "text": "text",
-#             "author": "author",
-#             "number_comments": "number_comments",
-#             "number_upvotes": "number_upvotes"
-#         }
+#         "data" : [
+    #         {
+    #             "title": "title",
+    #             "text": "text",
+    #             "author": "author",
+    #             "number_comments": "number_comments",
+    #             "number_upvotes": "number_upvotes",
+    #             "created_at": "datetime"
+    #         }
+#         ]
 #     ]
 # }]
 ########################################################

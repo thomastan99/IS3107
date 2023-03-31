@@ -170,7 +170,6 @@ def extract_tweet_news_data_into_BQ(query_dict):
     insert_data_into_BQ(news_data_as_file)
     print("SUCCESSFULLY INSERTED TWITTER NEWS DATA INTO BQ")
 
-
 ########################################################
 # JSON Structure: 
 # [{
