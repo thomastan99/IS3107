@@ -1,18 +1,17 @@
 # pull data from big query
-from google.cloud import bigquery
 import os
+
 # for data manipulations
 import pandas as pd
+from google.cloud import bigquery
 # sentiment analysis
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
-
-
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="./creds/cred.json"
 client = bigquery.Client()
 
 
-def pull_text_data(source, coin):
+def pull_text_data(source, tag):
     """
     extract relevant data from bigquery into dataframe
     """
@@ -24,7 +23,7 @@ def pull_text_data(source, coin):
             )
         SELECT d.created_at AS date, d.text
         from deduped_table d, UNNEST(matching_rules) AS nested_column 
-        WHERE nested_column.tag LIKE @coin AND DATE(double_nested_column.created_at) >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY);
+        WHERE nested_column.tag LIKE @coin AND DATE(REPLACE(LEFT(d.created_at, 19), 'T', ' ')) >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY);
         """
         
     else:
@@ -39,16 +38,21 @@ def pull_text_data(source, coin):
         SELECT double_nested_column.title as text, DATE(double_nested_column.created_at) AS date
         FROM `crypto3107.{source}.reddit` as r, UNNEST(reddit_details) AS nested_column, UNNEST(nested_column.data) AS double_nested_column
         WHERE r.reddit LIKE @coin AND DATE(double_nested_column.created_at) >= DATE_SUB(CURRENT_DATE(), INTERVAL 3 YEAR)
-
         """
 
-    job_config = bigquery.QueryJobConfig(query_parameters=[bigquery.ScalarQueryParameter('coin', 'STRING', f'%{coin}%')]) 
+    job_config = bigquery.QueryJobConfig(query_parameters=[bigquery.ScalarQueryParameter('coin', 'STRING', f'%{tag}%')]) 
     results = client.query(query, job_config=job_config).to_dataframe()
     results.date = pd.to_datetime(results.date)
-    print(results)
-    return results 
+    
+    # Handle file naming for reddit 
+    if 'r/' in tag:
+        tag = tag.replace('r/', 'r_')
+    if source == 'realtime_tweets':
+        tag = 'realtime_twitter' + tag
+    results.to_csv(f'assets/qualitative_data_{tag}.csv', index=False)
 
 data = pull_text_data("training_data", "#bitcoin") # or "realtime_tweets/ training_data
+
 
 
 def predict_sentiment(df):
@@ -84,8 +88,8 @@ def predict_sentiment(df):
     print(ts)
     return ts
  
-final_df = predict_sentiment(data)
-final_df.to_csv('qualitative_data_sample.csv', index=False)
+# final_df = predict_sentiment(data)
+# final_df.to_csv('qualitative_data_sample.csv', index=False)
 
 
 

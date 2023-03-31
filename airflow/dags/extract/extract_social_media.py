@@ -2,71 +2,41 @@ from airflow.operators.python import PythonOperator
 from airflow.utils.task_group import TaskGroup
 
 from airflow import DAG
-from scripts.google_search_script import (extract_google_coin_data_into_BQ,
-                                          extract_google_news_data_into_BQ)
-from scripts.reddit_script import (extract_reddit_coin_data_into_BQ,
-                                   extract_reddit_news_data_into_BQ)
-from scripts.twitter_training_data import (extract_tweet_coin_data_into_BQ,
-                                    extract_tweet_news_data_into_BQ)
+from scripts.qualitative_metrics import pull_text_data
+
 
 
 def build_extract_social_media_task(dag: DAG) -> TaskGroup:
-  dictionaries = {  
-    "reddit": {
-      "coinMethod": extract_reddit_coin_data_into_BQ,
-      "newsMethod": extract_reddit_news_data_into_BQ,
-      "arg": "query_dict",
-      "coins" : {
-        'bitcoin': 'r/Bitcoin',
-        'ethereum': 'r/ethereum',
-        'xrp': 'r/xrp',
-      },
-      "news" : {
-        'cryptocurrency': 'r/CryptoCurrency',
-        'cryptomarkets': 'r/CryptoMarkets',
-        'bitcoinbeginners': 'r/BitcoinBeginners',
-        'cryptocurrencies': 'r/CryptoCurrencies',
-        'crypto_general': 'r/Crypto_General'
-      }
-    },
-    "twitter" : {
-      "coinMethod": extract_tweet_coin_data_into_BQ,
-      "newsMethod": extract_tweet_news_data_into_BQ,
-      "arg": "query_dict",
-      "coins" : {
-        '#bitcoin': '#bitcoin',
-        '#ethereum': '#ethereum',
-        '#xrp': '#xrp',
-      }, 
-      "news" : {
-        '#cryptocurrency': '#cryptocurrency',
-        '#crypto': '#crypto',
-        '#cryptonews': '#cryptonews',
-        '#blockchain': '#blockchain'
-      }
-    }
+  tags = {
+    'common_bitcoin': 'bitcoin',
+    'common_ethereum': 'ethereum',
+    'common_xrp': 'xrp',
+    'reddit_cryptocurrency': 'r/CryptoCurrency',
+    'reddit_cryptomarkets': 'r/CryptoMarkets',
+    'reddit_bitcoinbeginners': 'r/BitcoinBeginners',
+    'reddit_cryptocurrencies': 'r/CryptoCurrencies',
+    'reddit_crypto_general': 'r/Crypto_General',
+    'twitter_cryptomarket': '#crptomarket',
+    'twitter_cryptocurrency': '#cryptocurrency',
+    'twitter_crypto': '#crypto',
+    'twitter_cryptonews': '#cryptonews',
+    'twitter_blockchain': '#blockchain'
   }
   
-  with TaskGroup(group_id='extract_social_media' ) as extractSocialMediaGroup:
-    for socials in ['reddit', 'twitter']: 
-      with TaskGroup(group_id=f'extract_{socials}') as path:
-        social_dict = dictionaries.get(f'{socials}')
-        
-        coin_data = PythonOperator(
-          task_id=f'extract_{socials}_search_coin_task',
-          python_callable=social_dict.get('coinMethod'),
-          op_kwargs={social_dict.get("arg"): social_dict.get('coins')},
+  with TaskGroup(group_id='extract_social_media') as extractSocialMediaGroup:
+    for tag in tags.keys(): 
+      extract_social_media_dag = PythonOperator(
+          task_id=f'extract_training_data_{tag}_task',
+          python_callable=pull_text_data, 
+          op_kwargs={'source': 'training_data', 'tag': tags[tag]},
           dag=dag
         )
-        
-        news_data = PythonOperator(
-          task_id=f'extract_{socials}_search_news_task',
-          python_callable=social_dict.get('newsMethod'),
-          op_kwargs={social_dict.get("arg"): social_dict.get('news')},
-          dag=dag
-        )
-        
-        coin_data >> news_data
-    
+      if ('common' in tag or 'twitter' in tag):
+        extract_realtime_twitter_dag = PythonOperator(
+            task_id=f'extract_realtime_twitter_{tag}_task',
+            python_callable=pull_text_data,
+            op_kwargs={'source': 'realtime_tweets', 'tag': tags[tag]},
+            dag=dag
+          )
   return extractSocialMediaGroup
   
