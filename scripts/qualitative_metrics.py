@@ -42,20 +42,21 @@ def pull_text_data(source, tag):
 
     job_config = bigquery.QueryJobConfig(query_parameters=[bigquery.ScalarQueryParameter('coin', 'STRING', f'%{tag}%')]) 
     results = client.query(query, job_config=job_config).to_dataframe()
+    if source == 'realtime_tweets':
+        results.date = results.date.apply(lambda x: x[0:10])
     results.date = pd.to_datetime(results.date)
-    
+      
     # Handle file naming for reddit 
     if 'r/' in tag:
         tag = tag.replace('r/', 'r_')
     if source == 'realtime_tweets':
-        tag = 'realtime_twitter' + tag
+        tag = 'realtime_twitter_' + tag
     results.to_csv(f'assets/qualitative_data_{tag}.csv', index=False)
 
-data = pull_text_data("training_data", "#bitcoin") # or "realtime_tweets/ training_data
 
 
 
-def predict_sentiment(df):
+def predict_sentiment(filepath):
     """
     create a new sentiment feature to be fed into ML model
     Cryptobert pretrained model predicts three classes
@@ -66,6 +67,9 @@ def predict_sentiment(df):
     }
     
     """
+    df = pd.read_csv(filepath, engine='python')
+    df['date'] = pd.to_datetime(df['date'], errors='coerce')
+    df.set_index('date')
     # Creating the sentiment analyzer object
     sid = SentimentIntensityAnalyzer()
     
@@ -83,13 +87,9 @@ def predict_sentiment(df):
 
     df['score'] = score
     # make a time series of mean score per day
-
     ts = df.groupby(pd.Grouper(key='date', freq='D')).mean().reset_index()
-    print(ts)
-    return ts
+    new_filepath = filepath.replace('qualitative_data', 'score')
+    ts.to_csv(new_filepath, index=False)
  
-# final_df = predict_sentiment(data)
-# final_df.to_csv('qualitative_data_sample.csv', index=False)
-
 
 

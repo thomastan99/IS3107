@@ -5,10 +5,10 @@ from airflow.operators.empty import EmptyOperator
 from airflow.utils.task_group import TaskGroup
 # from extract.extract_coincap import build_extract_coincap_task
 from extract.extract_social_media import build_extract_social_media_task
+from transform.transform_qualitative import build_transform_qualitative
 
 from airflow import DAG
 
-# from transform.transform_qualitative import build_transform_qualitative
 # from transform.transform_quantitative import build_transform_quantitative
 
 
@@ -32,8 +32,8 @@ with DAG (
     # extract_coincap = build_extract_coincap_task(dag=dag)
     extract_social_media = build_extract_social_media_task(dag=dag)
     
-  # with TaskGroup(group_id='transform') as transformGroup:
-  #   transform_quantitative = build_transform_quantitative(dag=dag)
-    # transform_qualitative = build_transform_qualitative(dag=dag)
+  with TaskGroup(group_id='transform') as transformGroup:
+    # transform_quantitative = build_transform_quantitative(dag=dag)
+    transform_qualitative = build_transform_qualitative(dag=dag)
 
-  start >> extractGroup
+  start >> extractGroup >> transformGroup
