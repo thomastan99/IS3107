@@ -9,7 +9,7 @@ def pull_coin_data(coin_name):
 
     query = f"""
     with deduped_table as (
-    select distinct * from `crypto3107.binance_data_new.{coin_name}`
+    select distinct * from `crypto3107.binance_data_new.{coin_name}_combined`
     )
     SELECT *
     from deduped_table
@@ -24,5 +24,4 @@ def pull_coin_data(coin_name):
 
 final_df = pull_coin_data('bitcoin')
 final_df.to_csv(f"quantitative_data.csv")
-
 
