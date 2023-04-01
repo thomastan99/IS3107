@@ -20,6 +20,13 @@ def pull_coin_data(coin_name):
 
     results = client.query(query).to_dataframe()
     results.Date = pd.to_datetime(results.Date)
-    results.to_csv(f"assets/quantitative_data_{coin_name}.csv")
+    outname = f'quantitative_data_{coin_name}.csv'
+
+    outdir = 'airflow/assets/quantitative/'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+
+    fullname = os.path.join(outdir, outname) 
+    results.to_csv(f'assets/quantitative/{outname}')
     
 

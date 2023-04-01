@@ -35,7 +35,7 @@ def build_transform_qualitative(dag: DAG) -> PythonOperator:
       predict_sentiment_task  = PythonOperator(
         task_id=f'predict_{filename}_sentiment',
         python_callable=predict_sentiment,
-        op_kwargs={"filepath": f'assets/{filenames[filename]}'},
+        op_kwargs={"filepath": f'{filenames[filename]}'},
         dag=dag
       ) 
 

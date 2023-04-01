@@ -51,7 +51,15 @@ def pull_text_data(source, tag):
         tag = tag.replace('r/', 'r_')
     if source == 'realtime_tweets':
         tag = 'realtime_twitter_' + tag
-    results.to_csv(f'assets/qualitative_data_{tag}.csv', index=False)
+    
+    outname = f'qualitative_data_{tag}.csv'
+
+    outdir = 'airflow/assets/qualitative/extract/'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+
+    fullname = os.path.join(outdir, outname) 
+    results.to_csv(f'assets/qualitative/extract/{outname}', index=False)
 
 
 
@@ -67,7 +75,7 @@ def predict_sentiment(filepath):
     }
     
     """
-    df = pd.read_csv(filepath, engine='python')
+    df = pd.read_csv(f'assets/qualitative/extract/{filepath}', engine='python')
     df['date'] = pd.to_datetime(df['date'], errors='coerce')
     df.set_index('date')
     # Creating the sentiment analyzer object
@@ -89,7 +97,15 @@ def predict_sentiment(filepath):
     # make a time series of mean score per day
     ts = df.groupby(pd.Grouper(key='date', freq='D')).mean().reset_index()
     new_filepath = filepath.replace('qualitative_data', 'score')
-    ts.to_csv(new_filepath, index=False)
+    
+    outname = f'qualitative_data_{new_filepath}'
+
+    outdir = 'airflow/assets/qualitative/score/'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+
+    fullname = os.path.join(outdir, outname) 
+    ts.to_csv(f'assets/qualitative/score/{outname}', index=False)
  
 
 
