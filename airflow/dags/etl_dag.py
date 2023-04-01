@@ -6,11 +6,9 @@ from airflow.utils.task_group import TaskGroup
 from extract.extract_quantitative import build_extract_quantitative_task
 from extract.extract_social_media import build_extract_social_media_task
 from transform.transform_qualitative import build_transform_qualitative
+from transform.transform_quantitative import build_transform_quantitative
 
 from airflow import DAG
-
-# from transform.transform_quantitative import build_transform_quantitative
-
 
 default_args = {
   'owner' : 'airflow',
@@ -33,7 +31,9 @@ with DAG (
     extract_social_media = build_extract_social_media_task(dag=dag)
     
   with TaskGroup(group_id='transform') as transformGroup:
-    # transform_quantitative = build_transform_quantitative(dag=dag)
+    transform_quantitative = build_transform_quantitative(dag=dag)
     transform_qualitative = build_transform_qualitative(dag=dag)
+    
+    transform_qualitative >> transform_quantitative
 
   start >> extractGroup >> transformGroup
