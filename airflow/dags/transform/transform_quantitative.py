@@ -11,7 +11,7 @@ def build_transform_quantitative(dag: DAG) -> PythonOperator:
       transform_quantitative_task = PapermillOperator(
         task_id=f"transform_{coin}_notebook",
         input_nb=f"scripts/model_{coin}_v2.ipynb",
-        output_nb=f"scripts/output_model_{coin}_v2.ipynb",
+        output_nb=f"models/output_model_{coin}_v2.ipynb",
       )
       
       transform_quantitative_task
