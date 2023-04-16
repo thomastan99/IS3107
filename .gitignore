@@ -4,6 +4,9 @@
 # ignore all asset files
 assets
 
+# ignore all model files
+models
+
 # ignore all pycache files
 *.pyc
 

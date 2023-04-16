@@ -1,6 +1,6 @@
 import os
-import pandas as pd
 
+import pandas as pd
 from google.cloud import bigquery
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="./creds/cred.json"
@@ -20,8 +20,13 @@ def pull_coin_data(coin_name):
 
     results = client.query(query).to_dataframe()
     results.Date = pd.to_datetime(results.Date)
-    return results
+    outname = f'quantitative_data_{coin_name}.csv'
 
-final_df = pull_coin_data('bitcoin')
-final_df.to_csv(f"quantitative_data.csv")
+    outdir = 'airflow/assets/quantitative/'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+
+    fullname = os.path.join(outdir, outname) 
+    results.to_csv(f'assets/quantitative/{outname}')
+    
 
