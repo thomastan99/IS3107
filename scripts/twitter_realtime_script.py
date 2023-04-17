@@ -7,7 +7,7 @@ import requests
 from google.api_core.exceptions import BadRequest
 from google.cloud import bigquery
 
-########################## ALL CREDENTIALS - REDDIT & BQ ##############################
+########################## ALL CREDENTIALS - BQ ##############################
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="./creds/cred.json"
 
@@ -116,7 +116,7 @@ def insert_data_into_BQ(data_as_file) :
     ]
 
     client = bigquery.Client()
-    table_id = "crypto3107.twitter.realtime_tweets"
+    table_id = "crypto3107.streaming.realtime_tweets"
     job_config = bigquery.LoadJobConfig(
         schema=schema,
         source_format=bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
