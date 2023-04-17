@@ -4,7 +4,7 @@ from airflow.operators.python import PythonOperator
 from airflow.utils.task_group import TaskGroup
 
 from airflow import DAG
-from scripts.quantitative_metrics import pull_coin_data
+from scripts.helper_functions import pull_coin_data
 
 
 def build_extract_quantitative_task(dag: DAG) -> TaskGroup:
