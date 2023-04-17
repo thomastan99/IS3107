@@ -56,7 +56,6 @@ def extract_yfinance_realtime_data(ticker, delay=60):
         prev_item["Volume"] = new_item["Volume"]
         start = False
       else:
-
         new_item["Previous_Price"] = prev_item["Price"]
         new_item["Previous_Volume"] = prev_item["Volume"]
 
@@ -65,5 +64,3 @@ def extract_yfinance_realtime_data(ticker, delay=60):
         time.sleep(delay)
         client.load_table_from_dataframe(new_item, table_id, job_config=job_config)
         time.sleep(delay)
-
-extract_yfinance_realtime_data("BTC-USD")

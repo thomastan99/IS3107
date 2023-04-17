@@ -1,11 +1,10 @@
-from google.cloud import bigquery
-from google.oauth2 import service_account
 import os
 
-from nltk.sentiment.vader import SentimentIntensityAnalyzer
-from google.api_core.exceptions import BadRequest
 import pandas as pd
-
+from google.api_core.exceptions import BadRequest
+from google.cloud import bigquery
+from google.oauth2 import service_account
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="./creds/cred.json"
 
@@ -127,7 +126,7 @@ def pull_text_data(source, tag):
     if 'realtime_tweets' in source:
         query = f"""
         with deduped_table as (
-            select * from `crypto3107.twitter.{source}`
+            select * from `crypto3107.streaming.{source}`
             )
         SELECT d.created_at AS date, d.text
         from deduped_table d, UNNEST(matching_rules) AS nested_column 
