@@ -2,7 +2,7 @@ from airflow.operators.python import PythonOperator
 from airflow.utils.task_group import TaskGroup
 
 from airflow import DAG
-from scripts.qualitative_metrics import pull_text_data
+from scripts.helper_functions import pull_text_data
 
 
 

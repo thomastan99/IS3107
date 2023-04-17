@@ -4,7 +4,7 @@ from airflow.operators.python import PythonOperator
 from airflow.utils.task_group import TaskGroup
 
 from airflow import DAG
-from scripts.load_model_outputs import load_model_output_into_BQ
+from scripts.helper_functions import load_model_output_into_BQ
 
 
 def build_load_model_output_task(dag: DAG) -> TaskGroup:
