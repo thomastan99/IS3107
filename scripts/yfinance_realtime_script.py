@@ -3,6 +3,9 @@ import time
 
 import numpy as np
 import yfinance as yf
+from datetime import datetime, timedelta  
+import datetime as dt
+from dateutil import tz
 from google.cloud import bigquery
 
 ########################## ALL CREDENTIALS - BQ ##############################
@@ -25,36 +28,41 @@ def extract_yfinance_realtime_data(ticker, delay=60):
     prev_item = None
     
     schema = [
-        bigquery.SchemaField("Price", "FLOAT64", mode="NULLABLE"),
-        bigquery.SchemaField("Volume", "INT64", mode="NULLABLE"),
-        bigquery.SchemaField("Previous_Price", "FLOAT64", mode="NULLABLE"),
-        bigquery.SchemaField("Previous_Volume", "INT64", mode="NULLABLE"),
-        bigquery.SchemaField("Datetime", "DATETIME", mode="NULLABLE"),
-        
+        bigquery.SchemaField("Price", "FLOAT64", mode="REQUIRED"),
+        bigquery.SchemaField("Volume", "INT64", mode="REQUIRED"),
+        bigquery.SchemaField("Close", "FLOAT64", mode="REQUIRED"),
+        bigquery.SchemaField("High", "FLOAT64", mode="REQUIRED"),
+        bigquery.SchemaField("Low", "FLOAT64", mode="REQUIRED"),
+        bigquery.SchemaField("Open", "FLOAT64", mode="REQUIRED"),
+        bigquery.SchemaField("Previous_Price", "FLOAT64", mode="REQUIRED"),
+        bigquery.SchemaField("Previous_Volume", "INT64", mode="REQUIRED"),
+        bigquery.SchemaField("Datetime", "DATETIME", mode="REQUIRED")
     ]
-
 
     job_config = bigquery.LoadJobConfig(schema=schema)
 
+    start = True
+    prev_item = {}
+
     while True:
-      if count != 0:
-        time.sleep(delay)
+
       new_item = yf.download(ticker, interval = "1m", period = "1d").tail(1)
-      new_item = new_item.rename(columns={'Open': 'Price'})
-      new_item = new_item.drop(columns=['High', 'Low', 'Close', 'Adj Close'])
-      if not prev_item is None:
-        new_item["Previous_Price"] = prev_item["Price"][0]
-        new_item["Previous_Volume"] = prev_item["Volume"][0]
+      new_item = new_item.assign(Price=new_item['Open'])
+      new_item = new_item.drop(columns=['Adj Close'])
+    
+      if start == True:
+        prev_item["Price"] = new_item["Price"]
+        prev_item["Volume"] = new_item["Volume"]
+        start = False
       else:
-        new_item["Previous_Price"] = np.nan
-        new_item["Previous_Volume"] = np.nan
-      
-      if (new_item["Previous_Price"][0] != np.nan and new_item["Previous_Volume"][0] != np.nan):
-        client.load_table_from_dataframe(
-          new_item, table_id, job_config=job_config
-        )
-      prev_item = new_item
-      
-      count += 1
-      
+
+        new_item["Previous_Price"] = prev_item["Price"]
+        new_item["Previous_Volume"] = prev_item["Volume"]
+
+        prev_item["Price"] = new_item["Price"]
+        prev_item["Volume"] = new_item["Volume"]
+        time.sleep(delay)
+        client.load_table_from_dataframe(new_item, table_id, job_config=job_config)
+        time.sleep(delay)
+
 extract_yfinance_realtime_data("BTC-USD")
