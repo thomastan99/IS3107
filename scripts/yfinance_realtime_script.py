@@ -47,6 +47,7 @@ def extract_yfinance_realtime_data(ticker, delay=60):
     while True:
 
       new_item = yf.download(ticker, interval = "1m", period = "1d").tail(1)
+      new_item.reset_index(inplace = True)
       new_item = new_item.assign(Price=new_item['Open'])
       new_item = new_item.drop(columns=['Adj Close'])
     
