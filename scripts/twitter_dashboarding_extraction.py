@@ -32,8 +32,6 @@ def pull_twitter_text(tag):
         
     results.date = pd.to_datetime(results.date)
     
-    print("coin, start, end", tag, local_start_datetime, local_end_datetime)
-    print("results",results)
     return results, local_end_datetime, local_start_datetime
 
 
@@ -48,6 +46,14 @@ def generate_realtime_sentiment_score(df, start_time, end_time):
     }
     
     """
+    
+    # If no tweets at the given time, default sentiment to 0
+    # if (len(df.index) == 0):
+    #     ts = pd.DataFrame(columns=['start_time','end_time','num_tweets','score','date'])
+    #     new_row = pd.DataFrame({'start_time': start_time, 'end_time':end_time, 'num_tweets':0, 'score':0, 'date': datetime.today().isoformat()}, index=[0])
+    #     ts = pd.concat([new_row,ts.loc[:]]).reset_index(drop=True)
+    #     return ts
+    
     df['date'] = pd.to_datetime(df['date'], errors='coerce')
     df.set_index('date')
     # Creating the sentiment analyzer object
@@ -72,7 +78,6 @@ def generate_realtime_sentiment_score(df, start_time, end_time):
     ts["start_time"] = start_time
     ts["end_time"] = end_time
     ts["num_tweets"] = num_tweets
-    ts.drop(columns=['date'])
     return ts
  
 
@@ -81,13 +86,44 @@ def load_score_into_gbq(coin, scores):
     table_id = f'crypto3107.streaming.{coin}_score'
     
     schema = [
-        bigquery.SchemaField("start_time", "STRING", mode="REQUIRED"),
-        bigquery.SchemaField("end_time", "STRING", mode="REQUIRED"),
-        bigquery.SchemaField("score", "FLOAT64", mode="REQUIRED"),
-        bigquery.SchemaField("num_tweets", "INT64", mode="REQUIRED"),
+        bigquery.SchemaField("start_time", "STRING", mode="NULLABLE"),
+        bigquery.SchemaField("end_time", "STRING", mode="NULLABLE"),
+        bigquery.SchemaField("score", "FLOAT64", mode="NULLABLE"),
+        bigquery.SchemaField("num_tweets", "INT64", mode="NULLABLE"),
+        bigquery.SchemaField("date", "DATETIME", mode="NULLABLE")
     ]
 
     job_config = bigquery.LoadJobConfig(schema=schema)
     
     client.load_table_from_dataframe(scores, table_id, job_config=job_config)
+    print(f"Successfully inserted the score for {coin}")
 
+
+def running_bitcoin():
+    results, local_end_datetime, local_start_datetime = pull_twitter_text("bitcoin")
+    print("bitcoin, start, end", local_start_datetime, local_end_datetime)
+    # print("results", results)
+    score = generate_realtime_sentiment_score(results, local_start_datetime, local_end_datetime)
+    print("Score", score)
+    load_score_into_gbq("bitcoin", score)
+
+def running_xrp():
+    results, local_end_datetime, local_start_datetime = pull_twitter_text("xrp")
+    print("xrp, start, end", local_start_datetime, local_end_datetime)
+    # print("results", results)
+    score = generate_realtime_sentiment_score(results, local_start_datetime, local_end_datetime)
+    print("Score", score)
+    load_score_into_gbq("xrp", score)
+    
+def running_ethereum():
+    results, local_end_datetime, local_start_datetime = pull_twitter_text("ethereum")
+    print("ethereum, start, end", local_start_datetime, local_end_datetime)
+    # print("results", results)
+    score = generate_realtime_sentiment_score(results, local_start_datetime, local_end_datetime)
+    print("Score", score)
+    load_score_into_gbq("ethereum", score)
+
+
+running_bitcoin()
+running_ethereum()
+running_xrp()

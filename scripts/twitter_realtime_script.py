@@ -1,6 +1,8 @@
 import io
 import json
 import os
+import time
+from datetime import datetime, timedelta
 from io import StringIO
 
 import requests
@@ -56,10 +58,22 @@ def get_rules():
         "https://api.twitter.com/2/tweets/search/stream/rules", auth=bearer_oauth
     )
     if response.status_code != 200:
-        raise Exception(
-            "Cannot get rules (HTTP {}): {}".format(response.status_code, response.text)
-        )
-    print(json.dumps(response.json()))
+        # print("Get Rules Response Code: ", response.status_code)
+        # x_rate_limit_reset = response.headers.get("x-rate-limit-reset")
+        # next_run_time = datetime.fromtimestamp(int(x_rate_limit_reset))
+        # time_till_next_runtime = datetime.now() - next_run_time
+        # seconds_to_next_run = time_till_next_runtime.total_seconds
+        # print("Seconds remaining till next run", seconds_to_next_run)
+        
+        # time.sleep(seconds_to_next_run)
+        # response = requests.get(
+        #     "https://api.twitter.com/2/tweets/search/stream/rules", auth=bearer_oauth
+        # )
+        
+        # raise Exception(
+        #     "Cannot get rules (HTTP {}): {}".format(response.status_code, response.headers)
+        # )
+    print("Get rules", json.dumps(response.json()))
     return response.json()
 
 
@@ -75,12 +89,25 @@ def delete_all_rules(rules):
         json=payload
     )
     if response.status_code != 200:
-        raise Exception(
-            "Cannot delete rules (HTTP {}): {}".format(
-                response.status_code, response.text
-            )
-        )
-    print(json.dumps(response.json()))
+        # print("Delete Rules Response Code: ", response.status_code)
+        # x_rate_limit_reset = response.headers.get("x-rate-limit-reset")
+        # next_run_time = datetime.fromtimestamp(int(x_rate_limit_reset))
+        # time_till_next_runtime = datetime.now() - next_run_time
+        # seconds_to_next_run = time_till_next_runtime.total_seconds
+        # print("Seconds remaining till next run", seconds_to_next_run)
+        
+        # time.sleep(seconds_to_next_run)
+        # response = requests.post(
+        #     "https://api.twitter.com/2/tweets/search/stream/rules",
+        #     auth=bearer_oauth,
+        #     json=payload
+        # )
+        # raise Exception(
+        #     "Cannot delete rules (HTTP {}): {}".format(
+        #         response.status_code, response.headers
+        #     )
+        # )
+    print("Deleted rules", json.dumps(response.json()))
 
 
 def set_rules(delete, rules):
@@ -92,10 +119,23 @@ def set_rules(delete, rules):
         json=payload,
     )
     if response.status_code != 201:
-        raise Exception(
-            "Cannot add rules (HTTP {}): {}".format(response.status_code, response.text)
-        )
-    print(json.dumps(response.json()))
+        # print("Delete Rules Response Code: ", response.status_code)
+        # x_rate_limit_reset = response.headers.get("x-rate-limit-reset")
+        # next_run_time = datetime.fromtimestamp(int(x_rate_limit_reset))
+        # time_till_next_runtime = datetime.now() - next_run_time
+        # seconds_to_next_run = time_till_next_runtime.total_seconds
+        # print("Seconds remaining till next run", seconds_to_next_run)
+        
+        # time.sleep(seconds_to_next_run)
+        # response = requests.post(
+        #     "https://api.twitter.com/2/tweets/search/stream/rules",
+        #     auth=bearer_oauth,
+        #     json=payload,
+        # )
+        # raise Exception(
+        #     "Cannot add rules (HTTP {}): {}".format(response.status_code, response.headers)
+        # )
+    print("Set rules", json.dumps(response.json()))
 
 
 def insert_data_into_BQ(data_as_file) :
@@ -141,13 +181,25 @@ def get_stream(set):
     response = requests.get(
         "https://api.twitter.com/2/tweets/search/stream?tweet.fields=author_id,created_at,text", auth=bearer_oauth, stream=True,
     )
-    print(response.status_code)
-    if response.status_code != 200:
-        raise Exception(
-            "Cannot get stream (HTTP {}): {}".format(
-                response.status_code, response.text
-            )
-        )
+    print("API Response Code", response.status_code)
+    # if response.status_code != 200:
+    #     print("Delete Rules Response Code: ", response.status_code)
+    #     x_rate_limit_reset = response.headers.get("x-rate-limit-reset")
+    #     next_run_time = datetime.fromtimestamp(int(x_rate_limit_reset))
+    #     time_till_next_runtime = datetime.now() - next_run_time
+    #     seconds_to_next_run = time_till_next_runtime.total_seconds
+    #     print("Seconds remaining till next run", seconds_to_next_run)
+        
+    #     time.sleep(seconds_to_next_run)
+    #     response = requests.get(
+    #         "https://api.twitter.com/2/tweets/search/stream?tweet.fields=author_id,created_at,text", auth=bearer_oauth, stream=True,
+    #     )
+        # raise Exception(
+        #     "Cannot get stream (HTTP {}): {}".format(
+        #         response.status_code, response.headers
+        #     )
+        # )
+        
     for response_line in response.iter_lines():
         if response_line:
             json_response = json.loads(response_line)
@@ -178,4 +230,5 @@ def extract_twitter_realtime_coin_news_data():
     delete = delete_all_rules(rules)
     set = set_rules(delete, coins_news_rules)
     get_stream(set)
-    
+
+extract_twitter_realtime_coin_news_data()

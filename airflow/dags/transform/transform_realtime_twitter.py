@@ -12,6 +12,7 @@ def transform_realtime_twitter_score(ti, coin):
     local_end_datetime = ti.xcom_pull(key="end_time", task_ids=f"extract.extract_twitter_realtime_coin_text.extract_twitter_{coin}_text")
     
     scores = generate_realtime_sentiment_score(results, local_start_datetime, local_end_datetime)  
+    print("SCORES", scores)
     ti.xcom_push(key="scores", value=scores)
     
 
