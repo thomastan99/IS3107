@@ -5,22 +5,21 @@ from airflow import DAG
 from scripts.helper_functions import pull_text_data
 
 
-
 def build_extract_social_media_task(dag: DAG) -> TaskGroup:
   tags = {
     'common_bitcoin': 'bitcoin',
     'common_ethereum': 'ethereum',
     'common_xrp': 'xrp',
-    'reddit_cryptocurrency': 'r/CryptoCurrency',
-    'reddit_cryptomarkets': 'r/CryptoMarkets',
-    'reddit_bitcoinbeginners': 'r/BitcoinBeginners',
-    'reddit_cryptocurrencies': 'r/CryptoCurrencies',
-    'reddit_crypto_general': 'r/Crypto_General',
-    'twitter_cryptomarket': '#crptomarket',
-    'twitter_cryptocurrency': '#cryptocurrency',
-    'twitter_crypto': '#crypto',
-    'twitter_cryptonews': '#cryptonews',
-    'twitter_blockchain': '#blockchain'
+    # 'reddit_cryptocurrency': 'r/CryptoCurrency',
+    # 'reddit_cryptomarkets': 'r/CryptoMarkets',
+    # 'reddit_bitcoinbeginners': 'r/BitcoinBeginners',
+    # 'reddit_cryptocurrencies': 'r/CryptoCurrencies',
+    # 'reddit_crypto_general': 'r/Crypto_General',
+    # 'twitter_cryptomarket': '#crptomarket',
+    # 'twitter_cryptocurrency': '#cryptocurrency',
+    # 'twitter_crypto': '#crypto',
+    # 'twitter_cryptonews': '#cryptonews',
+    # 'twitter_blockchain': '#blockchain'
   }
   
   with TaskGroup(group_id='extract_social_media') as extractSocialMediaGroup:

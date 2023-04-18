@@ -12,11 +12,11 @@ def build_extract_twitter_realtime_task(dag: DAG) -> TaskGroup:
         '#bitcoin': '#bitcoin',
         '#ethereum': '#ethereum',
         '#xrp': '#xrp',        
-        '#cryptomarket': '#crptomarket',
-        '#cryptocurrency': '#cryptocurrency',
-        '#crypto': '#crypto',
-        '#cryptonews': '#cryptonews',
-        '#blockchain': '#blockchain'
+        # '#cryptomarket': '#crptomarket',
+        # '#cryptocurrency': '#cryptocurrency',
+        # '#crypto': '#crypto',
+        # '#cryptonews': '#cryptonews',
+        # '#blockchain': '#blockchain'
     }
     twitter_realtime_coin_data = PythonOperator(
       task_id=f'extract_twitter_real_time_coins_news_twitter',
@@ -29,6 +29,7 @@ def build_extract_twitter_realtime_task(dag: DAG) -> TaskGroup:
 
 def extract_twitter_coin_text_data(ti, coin_name):
   results, local_end_datetime, local_start_datetime = pull_twitter_text(coin_name)
+  results = results.to_json()
   ti.xcom_push(key="results", value=results)
   ti.xcom_push(key="start_time", value=local_start_datetime)
   ti.xcom_push(key="end_time", value=local_end_datetime)

@@ -1,5 +1,4 @@
-import os
-
+import pandas as pd
 from airflow.operators.python import PythonOperator
 from airflow.utils.task_group import TaskGroup
 
@@ -9,6 +8,7 @@ from scripts.twitter_dashboarding_extraction import load_score_into_gbq
 
 def load_scores_into_BQ(ti, coin):
     scores = ti.xcom_pull(key="scores", task_ids=f"transform.transform_realtime_twitter_score.predict_realtime_{coin}_sentiment")
+    scores = pd.read_json(scores, orient='columns')
     load_score_into_gbq(coin, scores)
     
 

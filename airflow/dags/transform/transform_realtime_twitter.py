@@ -1,3 +1,6 @@
+
+
+import pandas as pd
 from airflow.operators.python import PythonOperator
 from airflow.utils.task_group import TaskGroup
 
@@ -11,8 +14,11 @@ def transform_realtime_twitter_score(ti, coin):
     local_start_datetime = ti.xcom_pull(key="start_time", task_ids=f"extract.extract_twitter_realtime_coin_text.extract_twitter_{coin}_text")
     local_end_datetime = ti.xcom_pull(key="end_time", task_ids=f"extract.extract_twitter_realtime_coin_text.extract_twitter_{coin}_text")
     
+    results = pd.read_json(results, orient='columns')
+    
     scores = generate_realtime_sentiment_score(results, local_start_datetime, local_end_datetime)  
     print("SCORES", scores)
+    scores = scores.to_json()
     ti.xcom_push(key="scores", value=scores)
     
 
