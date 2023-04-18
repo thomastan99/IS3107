@@ -3,15 +3,25 @@ from airflow.utils.task_group import TaskGroup
 
 from airflow import DAG
 from scripts.twitter_dashboarding_extraction import pull_twitter_text
-from scripts.twitter_realtime_script import \
-    extract_twitter_realtime_coin_news_data
+from scripts.twitter_realtime_script import extract_stream_data_into_gbq
 
 
 def build_extract_twitter_realtime_task(dag: DAG) -> TaskGroup:  
   with TaskGroup(group_id='extract_twitter_realtime') as extractRealTimeTwitter:
+    coins_news_dict = {
+        '#bitcoin': '#bitcoin',
+        '#ethereum': '#ethereum',
+        '#xrp': '#xrp',        
+        '#cryptomarket': '#crptomarket',
+        '#cryptocurrency': '#cryptocurrency',
+        '#crypto': '#crypto',
+        '#cryptonews': '#cryptonews',
+        '#blockchain': '#blockchain'
+    }
     twitter_realtime_coin_data = PythonOperator(
       task_id=f'extract_twitter_real_time_coins_news_twitter',
-      python_callable=extract_twitter_realtime_coin_news_data,
+      python_callable=extract_stream_data_into_gbq,
+      op_kwargs={'query_dict': coins_news_dict},
       dag=dag
     ) 
     
