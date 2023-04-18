@@ -126,7 +126,7 @@ def pull_text_data(source, tag):
     if 'realtime_tweets' in source:
         query = f"""
         with deduped_table as (
-            select * from `crypto3107.streaming.{source}`
+            select * from `crypto3107.twitter.{source}`
             )
         SELECT d.created_at AS date, d.text
         from deduped_table d, UNNEST(matching_rules) AS nested_column 
