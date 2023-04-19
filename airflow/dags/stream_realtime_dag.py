@@ -2,8 +2,6 @@ from datetime import datetime, timedelta
 
 from airflow.operators.empty import EmptyOperator
 from airflow.utils.task_group import TaskGroup
-from extract.extract_realtime_twitter import \
-    build_extract_twitter_realtime_task
 from extract.extract_realtime_yfinance import \
     build_extract_yfinance_realtime_task
 
@@ -28,7 +26,7 @@ with DAG (
   start = EmptyOperator(task_id='start')
   
   with TaskGroup(group_id='extract') as extractGroup:
-    extract_realtime_twitter = build_extract_twitter_realtime_task(dag=dag)
+    # extract_realtime_twitter = build_extract_twitter_realtime_task(dag=dag)
     extract_realtime_yfinance = build_extract_yfinance_realtime_task(dag=dag)
     
 

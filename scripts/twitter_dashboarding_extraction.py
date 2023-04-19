@@ -72,9 +72,12 @@ def generate_realtime_sentiment_score(df, start_time, end_time):
     # make a time series of mean score per day
     ts = df.groupby(pd.Grouper(key='date', freq='D')).mean().reset_index()
     
-    if (ts["score"][0] == 0):
+    ts_dict = ts.to_dict()
+    print("ts_dict", ts_dict["score"][0])
+    
+    if (ts_dict["score"][0] == 0):
         action = "neutral"
-    elif (ts["score"][0] > 0):
+    elif (ts_dict["score"][0] > 0):
         action = "positive"
     else:
         action = "negative"
@@ -111,7 +114,7 @@ def running_bitcoin():
     # print("results", results)
     score = generate_realtime_sentiment_score(results, local_start_datetime, local_end_datetime)
     print("Score", score)
-    load_score_into_gbq("bitcoin", score)
+    # load_score_into_gbq("bitcoin", score)
 
 def running_xrp():
     results, local_end_datetime, local_start_datetime = pull_twitter_text("xrp")
@@ -119,7 +122,7 @@ def running_xrp():
     # print("results", results)
     score = generate_realtime_sentiment_score(results, local_start_datetime, local_end_datetime)
     print("Score", score)
-    load_score_into_gbq("xrp", score)
+    # load_score_into_gbq("xrp", score)
     
 def running_ethereum():
     results, local_end_datetime, local_start_datetime = pull_twitter_text("ethereum")
@@ -127,7 +130,7 @@ def running_ethereum():
     # print("results", results)
     score = generate_realtime_sentiment_score(results, local_start_datetime, local_end_datetime)
     print("Score", score)
-    load_score_into_gbq("ethereum", score)
+    # load_score_into_gbq("ethereum", score)
 
 
 running_bitcoin()
